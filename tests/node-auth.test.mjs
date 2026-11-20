@@ -14,3 +14,9 @@ test('HTTPS sessions have host-only secure HttpOnly cookies and cross-site form 
  const cookie=sessionCookie('fixture',true);for(const value of ['__Host-dz_session=','HttpOnly','SameSite=Lax','Secure','Path=/'])assert(cookie.includes(value));assert(!cookie.includes('Domain='));
  const res=await handleAuth(new Request('https://darkhanzar.test/api/auth/login',{method:'POST',headers:{Origin:'https://other.test'}}),null,{});assert.equal(res.status,403);
 });
+test('Auth form pages keep the Origin header on same-site POST (no-referrer makes browsers send Origin: null)',async()=>{
+ for(const path of ['/login','/register','/setup']){
+  const res=await handleAuth(new Request('https://darkhanzar.test'+path),null,{});
+  assert.notEqual(res.headers.get('Referrer-Policy'),'no-referrer',path);
+ }
+});
