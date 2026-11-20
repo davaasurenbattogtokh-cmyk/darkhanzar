@@ -1,0 +1,2 @@
+export function Icon({name,className=''}:{name:string;className?:string}) {return <svg className={`icon ${className}`} viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href={`/brand/icons.svg#dz-${name}`}/></svg>;}
+export function Logo(){return <svg className="logo" viewBox="125 180 1065 215" role="img" aria-label="Darkhanzar"><image href="/brand/logo-source.png" width="1254" height="1254"/></svg>;}

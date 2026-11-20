@@ -1,0 +1,37 @@
+{
+  "files": 1715,
+  "parts": [
+    {
+      "name": "assets-000.part",
+      "sha256": "b4f08649a7adfd2a87bd1694330987c7519139a45d11ed85aeb385b9cb268ac3"
+    },
+    {
+      "name": "assets-001.part",
+      "sha256": "da171314ebfdd7e553f577b4ad93a9efa487319c2baa41b9026d972a8380a4ff"
+    },
+    {
+      "name": "assets-002.part",
+      "sha256": "4d1dee67cda03bee0392eba6505a6d5e24699e85aa617a320d54b59e2f57dbd2"
+    },
+    {
+      "name": "assets-003.part",
+      "sha256": "e79ad8f91d02c544a5c21d43ab1d5c480b24b2e8d4cfa77c938d7e621387b67f"
+    },
+    {
+      "name": "assets-004.part",
+      "sha256": "aee60cee20ecaebd749ba1dbf156229b1d1e1d77ae0751033ef60ac1410c7eb7"
+    },
+    {
+      "name": "assets-005.part",
+      "sha256": "6b81c074385ca28df555afa883edcd6d8d401d9452e55b9f4cd398adbe511eeb"
+    },
+    {
+      "name": "assets-006.part",
+      "sha256": "b630e577fd99a9ff9d2fa03e8f7ddc270f17ad0be1c698e237ddd7b0cbc965aa"
+    },
+    {
+      "name": "assets-007.part",
+      "sha256": "a8a6f428c084cb4c62042f43e39b761bd2528742aa5463aa530ae898f2c801ee"
+    }
+  ]
+}

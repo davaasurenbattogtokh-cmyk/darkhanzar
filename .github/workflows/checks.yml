@@ -1,0 +1,39 @@
+name: Check Darkhanzar
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: integration-only-password
+          MYSQL_DATABASE: darkhanzar_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -pintegration-only-password"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: integration-only-password
+      DB_NAME: darkhanzar_test
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node scripts/restore-assets.mjs
+      - run: npm run check:secrets
+      - run: npm test
+      - run: npm run test:mysql
+      - run: npm run build

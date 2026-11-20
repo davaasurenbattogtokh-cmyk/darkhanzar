@@ -1,0 +1,1792 @@
+{
+  "schemaVersion": 1,
+  "observedDate": "2026-11-17",
+  "source": "public Unegui listing pages via web search/open",
+  "allRootsObserved": true,
+  "exactWholeSiteParity": false,
+  "notes": [
+    "Observed root page filters for all 15 existing Darkhanzar categories and 60 useful child variants. 830 taxonomy nodes have not each been inspected.",
+    "Native select controls are shown as [Select] by public text extraction; labels are verified but exhaustive select option lists are not exposed. Empty options must not be claimed as a complete Unegui enum.",
+    "Keys are normalized Darkhanzar implementation keys, not private Unegui IDs.",
+    "Brands/models/rooms/carriers are often category tree levels rather than extra attributes. Reuse existing taxonomy.",
+    "Imported snapshots lack many attributes. Missing must remain unknown; never infer elevator/lease/condition from absence. Active attribute filter should match only explicit known values.",
+    "Do not replace unknown numeric values with zero. Derive year/importYear only from explicit title pair, mileage/engine/transmission/fuel only from explicit source features.",
+    "Keep source and observed timestamp for generated metadata.",
+    "For verified kids, pets, food and many service branches, the source exposes only common location/price controls; absence of custom branch fields here is observed, not an assumption of age/size/breed fields."
+  ],
+  "common": [
+    {
+      "id": "category",
+      "label": "Ангилал",
+      "type": "taxonomy"
+    },
+    {
+      "id": "region",
+      "label": "Зарын байршил",
+      "type": "region-tree",
+      "localizeTo": [
+        "Дархан-Уул",
+        "Сүхбаатар хот",
+        "Хөтөл"
+      ]
+    },
+    {
+      "id": "place",
+      "label": "Зарын дэд байршил",
+      "type": "text"
+    },
+    {
+      "id": "price",
+      "label": "Үнэ, ₮",
+      "type": "range",
+      "unit": "₮"
+    }
+  ],
+  "fields": {
+    "condition": {
+      "id": "condition",
+      "label": "Шинэ / Хуучин",
+      "type": "select",
+      "optionsComplete": true,
+      "options": [
+        "Шинэ",
+        "Хуучин"
+      ]
+    },
+    "plateStatus": {
+      "id": "plateStatus",
+      "label": "Нөхцөл",
+      "type": "multi",
+      "optionsComplete": true,
+      "options": [
+        "Дугаартай нь зарна",
+        "Дугаар авсан",
+        "Дугаар аваагүй",
+        "00 гүйлттэй"
+      ]
+    },
+    "bodyType": {
+      "id": "bodyType",
+      "label": "Төрөл",
+      "type": "multi",
+      "optionsComplete": true,
+      "options": [
+        "Жийп",
+        "Суудлын тэрэг",
+        "Гэр бүлийн"
+      ]
+    },
+    "steering": {
+      "id": "steering",
+      "label": "Хүрд",
+      "type": "select",
+      "optionsComplete": false,
+      "options": [],
+      "fallback": "free-text-or-known-listing-options"
+    },
+    "drive": {
+      "id": "drive",
+      "label": "Хөтлөгч",
+      "type": "multi",
+      "optionsComplete": true,
+      "options": [
+        "Урдаа FWD",
+        "Хойноо RWD",
+        "Бүх дугуй 4WD"
+      ]
+    },
+    "year": {
+      "id": "year",
+      "label": "Үйлдвэрлэсэн он",
+      "type": "range",
+      "optionsComplete": false
+    },
+    "importYear": {
+      "id": "importYear",
+      "label": "Орж ирсэн он",
+      "type": "range",
+      "optionsComplete": false
+    },
+    "fuel": {
+      "id": "fuel",
+      "label": "Хөдөлгүүр",
+      "type": "multi",
+      "optionsComplete": true,
+      "options": [
+        "Бензин",
+        "Дизель",
+        "Газ",
+        "Хайбрид",
+        "Цахилгаан"
+      ]
+    },
+    "engineSize": {
+      "id": "engineSize",
+      "label": "Мотор багтаамж",
+      "type": "range",
+      "optionsComplete": false,
+      "unit": "л"
+    },
+    "transmission": {
+      "id": "transmission",
+      "label": "Хурдны хайрцаг",
+      "type": "select",
+      "optionsComplete": false,
+      "options": [],
+      "fallback": "free-text-or-known-listing-options"
+    },
+    "mileage": {
+      "id": "mileage",
+      "label": "Явсан, км",
+      "type": "range",
+      "optionsComplete": false,
+      "unit": "км"
+    },
+    "leasing": {
+      "id": "leasing",
+      "label": "Лизинг",
+      "type": "multi",
+      "optionsComplete": true,
+      "options": [
+        "Хувь лизингтэй",
+        "Банкны лизингтэй",
+        "Лизинггүй",
+        "ББСБ лизингтэй"
+      ]
+    },
+    "color": {
+      "id": "color",
+      "label": "Өнгө",
+      "type": "multi",
+      "optionsComplete": true,
+      "options": [
+        "Цагаан",
+        "Хар",
+        "Цэнхэр",
+        "Цайвар цэнхэр",
+        "Хөх",
+        "Саарал",
+        "Хүрэн",
+        "Ягаан",
+        "Улаан",
+        "Ногоон",
+        "Улбар шар",
+        "Бор",
+        "Сувдан цагаан",
+        "Шар",
+        "Боронзон",
+        "Хар саарал",
+        "Бусад"
+      ]
+    },
+    "area": {
+      "id": "area",
+      "label": "Талбай, м²",
+      "type": "range",
+      "optionsComplete": false,
+      "unit": "м²"
+    },
+    "buildingFloors": {
+      "id": "buildingFloors",
+      "label": "Барилгын давхар",
+      "type": "range",
+      "optionsComplete": false
+    },
+    "floor": {
+      "id": "floor",
+      "label": "Хэдэн давхарт",
+      "type": "range",
+      "optionsComplete": false
+    },
+    "commissionYear": {
+      "id": "commissionYear",
+      "label": "Ашиглалтанд орсон он",
+      "type": "range",
+      "optionsComplete": false
+    },
+    "purchasePayment": {
+      "id": "purchasePayment",
+      "label": "Төлбөрийн нөхцөл",
+      "type": "multi",
+      "optionsComplete": true,
+      "options": [
+        "Хувь лизингээр",
+        "Банкны зээлээр",
+        "Бэлэн төлөлтөөр",
+        "Бартер сонирхоно"
+      ]
+    },
+    "rentalPayment": {
+      "id": "rentalPayment",
+      "label": "Төлбөрийн нөхцөл",
+      "type": "select",
+      "optionsComplete": false,
+      "options": [],
+      "fallback": "free-text-or-known-listing-options"
+    },
+    "constructionStage": {
+      "id": "constructionStage",
+      "label": "Барилгын явц",
+      "type": "select",
+      "optionsComplete": false,
+      "options": [],
+      "fallback": "free-text-or-known-listing-options"
+    },
+    "elevator": {
+      "id": "elevator",
+      "label": "Цахилгаан шаттай эсэх",
+      "type": "select",
+      "optionsComplete": false,
+      "options": [],
+      "fallback": "free-text-or-known-listing-options"
+    },
+    "garage": {
+      "id": "garage",
+      "label": "Гараж",
+      "type": "select",
+      "optionsComplete": false,
+      "options": [],
+      "fallback": "free-text-or-known-listing-options"
+    },
+    "landPurpose": {
+      "id": "landPurpose",
+      "label": "Зориулалт",
+      "type": "select",
+      "optionsComplete": false,
+      "options": [],
+      "fallback": "free-text-or-known-listing-options"
+    },
+    "commercialType": {
+      "id": "commercialType",
+      "label": "Төрөл",
+      "type": "multi",
+      "optionsComplete": true,
+      "options": [
+        "Лангуу",
+        "Ресторан",
+        "Паб",
+        "Бар",
+        "Үсчин",
+        "8 нэрийн дэлгүүр",
+        "Бусад үйлчилгээний газар",
+        "Супермаркет",
+        "Кофе шоп",
+        "Лоунж",
+        "ТҮЦ",
+        "Павильон",
+        "Караоке",
+        "Гоо сайхны салон",
+        "6 нэрийн дэлгүүр"
+      ]
+    },
+    "workTime": {
+      "id": "workTime",
+      "label": "Ажлын цаг",
+      "type": "multi",
+      "optionsComplete": true,
+      "options": [
+        "Бүтэн цагийн",
+        "Хагас цагийн",
+        "Цагийн",
+        "Гэрээт",
+        "Түр хугацааны"
+      ]
+    },
+    "experience": {
+      "id": "experience",
+      "label": "Туршлага",
+      "type": "select",
+      "optionsComplete": false,
+      "options": [],
+      "fallback": "free-text-or-known-listing-options"
+    },
+    "professionalLevel": {
+      "id": "professionalLevel",
+      "label": "Мэргэжлийн түвшин",
+      "type": "select",
+      "optionsComplete": false,
+      "options": [],
+      "fallback": "free-text-or-known-listing-options"
+    },
+    "screenSize": {
+      "id": "screenSize",
+      "label": "Дэлгэцийн хэмжээ",
+      "type": "select",
+      "optionsComplete": false,
+      "options": [],
+      "fallback": "free-text-or-known-listing-options"
+    },
+    "cpu": {
+      "id": "cpu",
+      "label": "CPU",
+      "type": "select",
+      "optionsComplete": false,
+      "options": [],
+      "fallback": "free-text-or-known-listing-options"
+    },
+    "ram": {
+      "id": "ram",
+      "label": "RAM",
+      "type": "select",
+      "optionsComplete": false,
+      "options": [],
+      "fallback": "free-text-or-known-listing-options"
+    },
+    "storage": {
+      "id": "storage",
+      "label": "SSD Hard",
+      "type": "select",
+      "optionsComplete": false,
+      "options": [],
+      "fallback": "free-text-or-known-listing-options"
+    },
+    "phoneStorage": {
+      "id": "phoneStorage",
+      "label": "Багтаамж",
+      "type": "select",
+      "optionsComplete": false,
+      "options": [],
+      "fallback": "free-text-or-known-listing-options"
+    },
+    "numberType": {
+      "id": "numberType",
+      "label": "Төрөл",
+      "type": "select",
+      "optionsComplete": false,
+      "options": [],
+      "fallback": "free-text-or-known-listing-options"
+    },
+    "shoeSize": {
+      "id": "shoeSize",
+      "label": "Размер",
+      "type": "multi",
+      "optionsComplete": true,
+      "options": [
+        "34",
+        "35",
+        "36",
+        "37",
+        "38",
+        "39",
+        "40",
+        "41",
+        "42",
+        "43"
+      ]
+    },
+    "clothingSize": {
+      "id": "clothingSize",
+      "label": "Размер",
+      "type": "multi",
+      "optionsComplete": true,
+      "options": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL",
+        "XXXL",
+        "Размергүй"
+      ]
+    },
+    "productType": {
+      "id": "productType",
+      "label": "Төрөл",
+      "type": "select",
+      "optionsComplete": false,
+      "options": [],
+      "fallback": "free-text-or-known-listing-options"
+    },
+    "brand": {
+      "id": "brand",
+      "label": "Брэнд",
+      "type": "select",
+      "optionsComplete": false,
+      "options": [],
+      "fallback": "free-text-or-known-listing-options"
+    },
+    "season": {
+      "id": "season",
+      "label": "Улирал",
+      "type": "select",
+      "optionsComplete": false,
+      "options": [],
+      "fallback": "free-text-or-known-listing-options"
+    },
+    "capacity": {
+      "id": "capacity",
+      "label": "Хүчин чадал",
+      "type": "select",
+      "optionsComplete": false,
+      "options": [],
+      "fallback": "free-text-or-known-listing-options"
+    },
+    "tvFunction": {
+      "id": "tvFunction",
+      "label": "Функц",
+      "type": "select",
+      "optionsComplete": false,
+      "options": [],
+      "fallback": "free-text-or-known-listing-options"
+    },
+    "driver": {
+      "id": "driver",
+      "label": "Жолооч",
+      "type": "select",
+      "optionsComplete": false,
+      "options": [],
+      "fallback": "free-text-or-known-listing-options"
+    },
+    "vehicleCondition": {
+      "id": "vehicleCondition",
+      "label": "Нөхцөл",
+      "type": "select",
+      "optionsComplete": false,
+      "options": [],
+      "fallback": "free-text-or-known-listing-options"
+    },
+    "country": {
+      "id": "country",
+      "label": "Үйлдвэрлэсэн улс",
+      "type": "select",
+      "optionsComplete": false,
+      "options": [],
+      "fallback": "free-text-or-known-listing-options"
+    },
+    "truckType": {
+      "id": "truckType",
+      "label": "Төрөл",
+      "type": "select",
+      "optionsComplete": false,
+      "options": [],
+      "fallback": "free-text-or-known-listing-options"
+    },
+    "truckDrive": {
+      "id": "truckDrive",
+      "label": "Хөтлөгч",
+      "type": "select",
+      "optionsComplete": false,
+      "options": [],
+      "fallback": "free-text-or-known-listing-options"
+    },
+    "payload": {
+      "id": "payload",
+      "label": "Даац",
+      "type": "range",
+      "optionsComplete": false
+    },
+    "machinePurpose": {
+      "id": "machinePurpose",
+      "label": "Зориулалт",
+      "type": "select",
+      "optionsComplete": false,
+      "options": [],
+      "fallback": "free-text-or-known-listing-options"
+    },
+    "radius": {
+      "id": "radius",
+      "label": "Радиус",
+      "type": "multi",
+      "optionsComplete": true,
+      "options": [
+        "R13",
+        "R14",
+        "R15",
+        "R16",
+        "R16.5",
+        "R17",
+        "R17.5",
+        "R18",
+        "R19",
+        "R19.5",
+        "R20",
+        "R21",
+        "R22"
+      ]
+    },
+    "tyreWidth": {
+      "id": "tyreWidth",
+      "label": "Дугуйн өргөн",
+      "type": "multi",
+      "optionsComplete": true,
+      "options": [
+        "175",
+        "185",
+        "195",
+        "205",
+        "215",
+        "225",
+        "235",
+        "245",
+        "255",
+        "265",
+        "275",
+        "285",
+        "295",
+        "305",
+        "310",
+        "315",
+        "325",
+        "335",
+        "345",
+        "355"
+      ]
+    },
+    "tyreHeight": {
+      "id": "tyreHeight",
+      "label": "Дугуйн өндөр",
+      "type": "multi",
+      "optionsComplete": true,
+      "options": [
+        "95",
+        "90",
+        "85",
+        "80",
+        "75",
+        "70",
+        "65",
+        "60",
+        "55",
+        "50",
+        "45",
+        "40"
+      ]
+    },
+    "monitorSize": {
+      "id": "monitorSize",
+      "label": "Хэмжээ",
+      "type": "multi",
+      "optionsComplete": true,
+      "options": [
+        "15 инч хүртэл",
+        "16 - 19 инч",
+        "20 - 24 инч",
+        "25+ инч"
+      ]
+    },
+    "perfumeType": {
+      "id": "perfumeType",
+      "label": "Төрөл",
+      "type": "multi",
+      "optionsComplete": true,
+      "options": [
+        "Эрэгтэй үнэртэй ус",
+        "Эмэгтэй үнэртэй ус"
+      ]
+    },
+    "transportPayload": {
+      "id": "transportPayload",
+      "label": "Даац",
+      "type": "multi",
+      "optionsComplete": true,
+      "options": [
+        "0 - 2 тонн",
+        "2.1 - 5 тонн",
+        "5.1 - 10 тонн",
+        "10 тонноос дээш"
+      ]
+    },
+    "operatingSystem": {
+      "id": "operatingSystem",
+      "label": "Үйлдлийн систем",
+      "type": "select",
+      "optionsComplete": false,
+      "options": [],
+      "fallback": "free-text-or-known-listing-options"
+    }
+  },
+  "roots": [
+    {
+      "categoryId": "property",
+      "label": "Үл хөдлөх",
+      "url": "https://www.unegui.mn/l-hdlh/",
+      "fields": [],
+      "priceLabel": "Үнэ, ₮",
+      "coverage": "root-page-observed"
+    },
+    {
+      "categoryId": "cars",
+      "label": "Автомашин",
+      "url": "https://www.unegui.mn/avto-mashin/",
+      "fields": [],
+      "priceLabel": "Үнэ, ₮",
+      "coverage": "root-page-observed"
+    },
+    {
+      "categoryId": "fashion",
+      "label": "Хувцас хэрэглэл",
+      "url": "https://www.unegui.mn/huvtsas-hereglel/",
+      "fields": [
+        "condition"
+      ],
+      "priceLabel": "Үнэ, ₮",
+      "coverage": "root-page-observed"
+    },
+    {
+      "categoryId": "jobs",
+      "label": "Ажлын зар",
+      "url": "https://www.unegui.mn/azhild-avna/",
+      "fields": [
+        "workTime",
+        "experience",
+        "professionalLevel"
+      ],
+      "priceLabel": "Цалин , ₮",
+      "coverage": "root-page-observed"
+    },
+    {
+      "categoryId": "kids",
+      "label": "Хүүхдийн бараа",
+      "url": "https://www.unegui.mn/hhdijn-baraa/",
+      "fields": [],
+      "priceLabel": "Үнэ, ₮",
+      "coverage": "root-page-observed"
+    },
+    {
+      "categoryId": "computers",
+      "label": "Компьютер сэлбэг хэрэгсэл",
+      "url": "https://www.unegui.mn/kompyuter-busad/",
+      "fields": [],
+      "priceLabel": "Үнэ, ₮",
+      "coverage": "root-page-observed"
+    },
+    {
+      "categoryId": "phones",
+      "label": "Утас, дугаар",
+      "url": "https://www.unegui.mn/utas--dugaar/",
+      "fields": [],
+      "priceLabel": "Үнэ, ₮",
+      "coverage": "root-page-observed"
+    },
+    {
+      "categoryId": "electronics",
+      "label": "Цахилгаан бараа",
+      "url": "https://www.unegui.mn/electro/",
+      "fields": [],
+      "priceLabel": "Үнэ, ₮",
+      "coverage": "root-page-observed"
+    },
+    {
+      "categoryId": "home",
+      "label": "Гэр ахуйн бараа",
+      "url": "https://www.unegui.mn/ger-ahujn-baraa/",
+      "fields": [
+        "condition"
+      ],
+      "priceLabel": "Үнэ, ₮",
+      "coverage": "root-page-observed"
+    },
+    {
+      "categoryId": "equipment",
+      "label": "Төхөөрөмж, материал, түлш",
+      "url": "https://www.unegui.mn/thrmzh-barilgyin-material-tlsh-thij-ed/",
+      "fields": [
+        "condition"
+      ],
+      "priceLabel": "Үнэ, ₮",
+      "coverage": "root-page-observed"
+    },
+    {
+      "categoryId": "hobby",
+      "label": "Амралт, спорт, хобби",
+      "url": "https://www.unegui.mn/hobbi-sport/",
+      "fields": [
+        "condition"
+      ],
+      "priceLabel": "Үнэ, ₮",
+      "coverage": "root-page-observed"
+    },
+    {
+      "categoryId": "health",
+      "label": "Эрүүл мэнд, гоо сайхан, хүнс",
+      "url": "https://www.unegui.mn/eruul-mend-goo-saikhan-huns/",
+      "fields": [],
+      "priceLabel": "Үнэ, ₮",
+      "coverage": "root-page-observed"
+    },
+    {
+      "categoryId": "animals",
+      "label": "Мал амьтан, ургамал",
+      "url": "https://www.unegui.mn/mal-amitan/",
+      "fields": [],
+      "priceLabel": "Үнэ, ₮",
+      "coverage": "root-page-observed"
+    },
+    {
+      "categoryId": "services",
+      "label": "Үйлчилгээ",
+      "url": "https://www.unegui.mn/jlchilgee/",
+      "fields": [],
+      "priceLabel": "Үнэ, ₮",
+      "coverage": "root-page-observed"
+    },
+    {
+      "categoryId": "free",
+      "label": "Үнэгүй өгнө",
+      "url": "https://www.unegui.mn/unegui-ogno/",
+      "fields": [],
+      "priceLabel": "Үнэ, ₮",
+      "coverage": "root-page-observed"
+    }
+  ],
+  "variants": [
+    {
+      "id": "car-sale",
+      "categoryId": "cars",
+      "subcategoryContains": [
+        "Автомашин зарна"
+      ],
+      "url": "https://www.unegui.mn/avto-mashin/-avtomashin-zarna/",
+      "fields": [
+        "plateStatus",
+        "bodyType",
+        "steering",
+        "drive",
+        "year",
+        "importYear",
+        "fuel",
+        "engineSize",
+        "transmission",
+        "mileage",
+        "leasing",
+        "color"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": true,
+      "taxonomyPath": "Автомашин > Автомашин зарна",
+      "taxonomyId": "CAT-0030",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "property-sale",
+      "categoryId": "property",
+      "subcategoryContains": [
+        "Үл хөдлөх зарна"
+      ],
+      "url": "https://www.unegui.mn/l-hdlh/l-hdlh-zarna/",
+      "fields": [
+        "purchasePayment"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": true,
+      "taxonomyPath": "Үл хөдлөх > Үл хөдлөх зарна",
+      "taxonomyId": "CAT-0002",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "property-rent",
+      "categoryId": "property",
+      "subcategoryContains": [
+        "Үл хөдлөх түрээслүүлнэ"
+      ],
+      "url": "https://www.unegui.mn/l-hdlh/l-hdlh-treesllne/",
+      "fields": [
+        "rentalPayment"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": true,
+      "taxonomyPath": "Үл хөдлөх > Үл хөдлөх түрээслүүлнэ",
+      "taxonomyId": "CAT-0015",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "apartment-sale",
+      "categoryId": "property",
+      "subcategoryContains": [
+        "Орон сууц зарна"
+      ],
+      "url": "https://www.unegui.mn/l-hdlh/l-hdlh-zarna/oron-suuts-zarna/",
+      "fields": [
+        "area",
+        "buildingFloors",
+        "floor",
+        "commissionYear",
+        "purchasePayment",
+        "constructionStage",
+        "elevator"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": true,
+      "taxonomyPath": "Үл хөдлөх > Үл хөдлөх зарна > Орон сууц зарна",
+      "taxonomyId": "CAT-0003",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "apartment-rent",
+      "categoryId": "property",
+      "subcategoryContains": [
+        "Орон сууц түрээслүүлнэ"
+      ],
+      "url": "https://www.unegui.mn/l-hdlh/l-hdlh-treesllne/oron-suuts/",
+      "fields": [
+        "garage",
+        "area",
+        "floor",
+        "buildingFloors"
+      ],
+      "inheritRoot": false,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": true,
+      "taxonomyPath": "Үл хөдлөх > Үл хөдлөх түрээслүүлнэ > Орон сууц түрээслүүлнэ",
+      "taxonomyId": "CAT-0016",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "land-sale",
+      "categoryId": "property",
+      "subcategoryContains": [
+        "Газар зарна"
+      ],
+      "url": "https://www.unegui.mn/l-hdlh/l-hdlh-zarna/gazar/",
+      "fields": [
+        "purchasePayment",
+        "landPurpose"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": true,
+      "taxonomyPath": "Үл хөдлөх > Үл хөдлөх зарна > Газар зарна",
+      "taxonomyId": "CAT-0006",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "commercial-sale",
+      "categoryId": "property",
+      "subcategoryContains": [
+        "Худалдаа, үйлчилгээний талбай зарна"
+      ],
+      "url": "https://www.unegui.mn/l-hdlh/l-hdlh-zarna/hudaldaa-jlchilgeenij-talbaj-zarna/",
+      "fields": [
+        "purchasePayment",
+        "commercialType",
+        "area"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": true,
+      "taxonomyPath": "Үл хөдлөх > Үл хөдлөх зарна > Худалдаа, үйлчилгээний талбай зарна",
+      "taxonomyId": "CAT-0010",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "notebook",
+      "categoryId": "computers",
+      "subcategoryContains": [
+        "Notebook"
+      ],
+      "url": "https://www.unegui.mn/kompyuter-busad/notebook/",
+      "fields": [
+        "screenSize",
+        "cpu",
+        "ram",
+        "storage"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": true,
+      "taxonomyPath": "Компьютер сэлбэг хэрэгсэл > Notebook",
+      "taxonomyId": "CAT-0385",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "mobile-phones",
+      "categoryId": "phones",
+      "subcategoryContains": [
+        "Гар утас ба утаснууд"
+      ],
+      "url": "https://www.unegui.mn/utas--dugaar/gar-utas-ba-utasnuud/",
+      "fields": [
+        "condition",
+        "phoneStorage"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": true,
+      "taxonomyPath": "Утас, дугаар > Гар утас ба утаснууд",
+      "taxonomyId": "CAT-0434",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "phone-numbers",
+      "categoryId": "phones",
+      "subcategoryContains": [
+        "Гар утасны дугаар"
+      ],
+      "url": "https://www.unegui.mn/utas--dugaar/gar-utasnyi-dugaar/",
+      "fields": [
+        "numberType"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": true,
+      "taxonomyPath": "Утас, дугаар > Гар утасны дугаар",
+      "taxonomyId": "CAT-0456",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "womens-shoes",
+      "categoryId": "fashion",
+      "subcategoryContains": [
+        "Эмэгтэй гутал"
+      ],
+      "url": "https://www.unegui.mn/huvtsas-hereglel/gutal-pz/emegtej-gutal/",
+      "fields": [
+        "condition",
+        "shoeSize",
+        "productType",
+        "brand"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": true,
+      "taxonomyPath": "Хувцас хэрэглэл > Гутал, пүүз > Эмэгтэй гутал",
+      "taxonomyId": "CAT-0139",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "womens-outerwear",
+      "categoryId": "fashion",
+      "subcategoryContains": [
+        "Эмэгтэй хувцас",
+        "Гадуур хувцас"
+      ],
+      "url": "https://www.unegui.mn/huvtsas-hereglel/emegtej-huvtsas/gaduur-huvtsas/",
+      "fields": [
+        "condition",
+        "clothingSize",
+        "productType",
+        "season"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": true,
+      "taxonomyPath": "Хувцас хэрэглэл > Эмэгтэй хувцас > Гадуур хувцас",
+      "taxonomyId": "CAT-0117",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "fridge",
+      "categoryId": "electronics",
+      "subcategoryContains": [
+        "Хөргөгч, хөлдөөгч"
+      ],
+      "url": "https://www.unegui.mn/electro/hrggch-hldgch/",
+      "fields": [
+        "productType",
+        "brand"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": true,
+      "taxonomyPath": "Цахилгаан бараа > Хөргөгч, хөлдөөгч",
+      "taxonomyId": "CAT-0513",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "washer",
+      "categoryId": "electronics",
+      "subcategoryContains": [
+        "Угаалгын машин"
+      ],
+      "url": "https://www.unegui.mn/electro/ugaalgyin-mashin/",
+      "fields": [
+        "brand",
+        "productType",
+        "capacity"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": true,
+      "match": "path-equals-or-descendant",
+      "taxonomyPath": "Цахилгаан бараа > Угаалгын машин",
+      "taxonomyId": "CAT-0509"
+    },
+    {
+      "id": "tv",
+      "categoryId": "electronics",
+      "subcategoryContains": [
+        "Tелевизор"
+      ],
+      "url": "https://www.unegui.mn/electro/tv-audio--video/televizor/",
+      "fields": [
+        "brand",
+        "screenSize",
+        "tvFunction"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": true,
+      "taxonomyPath": "Цахилгаан бараа > ТВ, Аudio + Video > Tелевизор",
+      "taxonomyId": "CAT-0488",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "house-sale",
+      "categoryId": "property",
+      "subcategoryContains": [
+        "АОС, хаус, зуслан, амралтын газар зарна"
+      ],
+      "url": "https://www.unegui.mn/l-hdlh/l-hdlh-zarna/a-o-s-hauszuslan/",
+      "fields": [
+        "area",
+        "purchasePayment"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": true,
+      "taxonomyPath": "Үл хөдлөх > Үл хөдлөх зарна > АОС, хаус, зуслан, амралтын газар зарна",
+      "taxonomyId": "CAT-0009",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "fenced-house-sale",
+      "categoryId": "property",
+      "subcategoryContains": [
+        "Хашаа байшин зарна"
+      ],
+      "url": "https://www.unegui.mn/l-hdlh/l-hdlh-zarna/hashaa-bajshin/",
+      "fields": [
+        "area",
+        "purchasePayment"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": true,
+      "taxonomyPath": "Үл хөдлөх > Үл хөдлөх зарна > Хашаа байшин зарна",
+      "taxonomyId": "CAT-0005",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "car-rent",
+      "categoryId": "cars",
+      "subcategoryContains": [
+        "Авто түрээслүүлнэ"
+      ],
+      "url": "https://www.unegui.mn/avto-mashin/avto-treesllne/",
+      "fields": [
+        "productType",
+        "driver"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": true,
+      "taxonomyPath": "Автомашин > Авто түрээслүүлнэ",
+      "taxonomyId": "CAT-0099",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "motorcycle",
+      "categoryId": "cars",
+      "subcategoryContains": [
+        "Мотоцикл, мопед, суррон"
+      ],
+      "url": "https://www.unegui.mn/avto-mashin/mototsikl-moped-/",
+      "fields": [
+        "leasing",
+        "year",
+        "condition",
+        "productType"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": true,
+      "taxonomyPath": "Автомашин > Мотоцикл, мопед, суррон",
+      "taxonomyId": "CAT-0100",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "truck",
+      "categoryId": "cars",
+      "subcategoryContains": [
+        "Ачааны машин"
+      ],
+      "url": "https://www.unegui.mn/avto-mashin/achaanyi-mashin-avtobus-hnd-mehanizm/achaany-mashin/",
+      "fields": [
+        "vehicleCondition",
+        "truckType",
+        "country",
+        "truckDrive",
+        "payload",
+        "leasing",
+        "importYear"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": true,
+      "taxonomyPath": "Автомашин > Ачааны машин, автобус, хүнд механизм > Ачааны машин",
+      "taxonomyId": "CAT-0096",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "heavy-machinery",
+      "categoryId": "cars",
+      "subcategoryContains": [
+        "Хүнд механизм"
+      ],
+      "url": "https://www.unegui.mn/avto-mashin/achaanyi-mashin-avtobus-hnd-mehanizm/khund-mekhanizm/",
+      "fields": [
+        "year",
+        "country",
+        "machinePurpose",
+        "vehicleCondition",
+        "leasing"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": true,
+      "taxonomyPath": "Автомашин > Ачааны машин, автобус, хүнд механизм > Хүнд механизм",
+      "taxonomyId": "CAT-0098",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "tyres",
+      "categoryId": "cars",
+      "subcategoryContains": [
+        "Дугуй"
+      ],
+      "url": "https://www.unegui.mn/avto-mashin/avto-dugujobud/duguj/",
+      "fields": [
+        "season",
+        "radius",
+        "tyreWidth",
+        "tyreHeight"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": true,
+      "taxonomyPath": "Автомашин > Авто дугуй, обуд > Дугуй",
+      "taxonomyId": "CAT-0106",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "rims",
+      "categoryId": "cars",
+      "subcategoryContains": [
+        "Обуд"
+      ],
+      "url": "https://www.unegui.mn/avto-mashin/avto-dugujobud/obud/",
+      "fields": [
+        "radius"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": true,
+      "taxonomyPath": "Автомашин > Авто дугуй, обуд > Обуд",
+      "taxonomyId": "CAT-0107",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "kids-clothes",
+      "categoryId": "kids",
+      "subcategoryContains": [
+        "Хүүхдийн хувцас"
+      ],
+      "url": "https://www.unegui.mn/hhdijn-baraa/hhdijn-huvtsas/",
+      "fields": [],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Хүүхдийн бараа > Хүүхдийн хувцас",
+      "taxonomyId": "CAT-0354",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "kids-shoes",
+      "categoryId": "kids",
+      "subcategoryContains": [
+        "Хүүхдийн гутал"
+      ],
+      "url": "https://www.unegui.mn/hhdijn-baraa/hhdijn-gutal/",
+      "fields": [],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Хүүхдийн бараа > Хүүхдийн гутал",
+      "taxonomyId": "CAT-0365",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "kids-toys",
+      "categoryId": "kids",
+      "subcategoryContains": [
+        "Хүүхдийн тоглоом"
+      ],
+      "url": "https://www.unegui.mn/hhdijn-baraa/hhdijn-togloom/",
+      "fields": [],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Хүүхдийн бараа > Хүүхдийн тоглоом",
+      "taxonomyId": "CAT-0368",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "kids-stroller",
+      "categoryId": "kids",
+      "subcategoryContains": [
+        "Хүүхдийн тэрэг"
+      ],
+      "url": "https://www.unegui.mn/hhdijn-baraa/hhdijn-tereg/",
+      "fields": [],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Хүүхдийн бараа > Хүүхдийн тэрэг",
+      "taxonomyId": "CAT-0366",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "kids-furniture",
+      "categoryId": "kids",
+      "subcategoryContains": [
+        "Хүүхдийн тавилга"
+      ],
+      "url": "https://www.unegui.mn/hhdijn-baraa/hhdijn-tavilga/",
+      "fields": [],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Хүүхдийн бараа > Хүүхдийн тавилга",
+      "taxonomyId": "CAT-0367",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "kids-car-seat",
+      "categoryId": "kids",
+      "subcategoryContains": [
+        "Хүүхдийн машины суудал"
+      ],
+      "url": "https://www.unegui.mn/hhdijn-baraa/hhdijn-mashinyi-suudal/",
+      "fields": [],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Хүүхдийн бараа > Хүүхдийн машины суудал",
+      "taxonomyId": "CAT-0369",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "desktop",
+      "categoryId": "computers",
+      "subcategoryContains": [
+        "Суурин компьютер"
+      ],
+      "url": "https://www.unegui.mn/kompyuter-busad/desktop/",
+      "fields": [],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Компьютер сэлбэг хэрэгсэл > Суурин компьютер",
+      "taxonomyId": "CAT-0381",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "computer-parts",
+      "categoryId": "computers",
+      "subcategoryContains": [
+        "Сэлбэг"
+      ],
+      "url": "https://www.unegui.mn/kompyuter-busad/selbeg/",
+      "fields": [
+        "productType"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": true,
+      "taxonomyPath": "Компьютер сэлбэг хэрэгсэл > Сэлбэг",
+      "taxonomyId": "CAT-0417",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "complete-pc",
+      "categoryId": "computers",
+      "subcategoryContains": [
+        "Суурин компьютер",
+        "Иж бүрэн компьютер"
+      ],
+      "url": "https://www.unegui.mn/kompyuter-busad/desktop/pc-desktop/",
+      "fields": [],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Компьютер сэлбэг хэрэгсэл > Суурин компьютер > Иж бүрэн компьютер",
+      "taxonomyId": "CAT-0382",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "monitor",
+      "categoryId": "computers",
+      "subcategoryContains": [
+        "Суурин компьютер",
+        "Дэлгэц"
+      ],
+      "url": "https://www.unegui.mn/kompyuter-busad/desktop/delgets/",
+      "fields": [
+        "monitorSize"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Компьютер сэлбэг хэрэгсэл > Суурин компьютер > Дэлгэц",
+      "taxonomyId": "CAT-0383",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "tablet",
+      "categoryId": "computers",
+      "subcategoryContains": [
+        "iPad, tablet, kindle"
+      ],
+      "url": "https://www.unegui.mn/kompyuter-busad/ipad--tablet/",
+      "fields": [
+        "operatingSystem"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": true,
+      "taxonomyPath": "Компьютер сэлбэг хэрэгсэл > iPad, tablet, kindle",
+      "taxonomyId": "CAT-0418",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "furniture",
+      "categoryId": "home",
+      "subcategoryContains": [
+        "Тавилга"
+      ],
+      "url": "https://www.unegui.mn/ger-ahujn-baraa/tavilga/",
+      "fields": [
+        "condition"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Гэр ахуйн бараа > Тавилга",
+      "taxonomyId": "CAT-0524",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "sofa",
+      "categoryId": "home",
+      "subcategoryContains": [
+        "Тавилга",
+        "Буйдан, кресло"
+      ],
+      "url": "https://www.unegui.mn/ger-ahujn-baraa/tavilga/buidan/",
+      "fields": [
+        "condition"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Гэр ахуйн бараа > Тавилга > Буйдан, кресло",
+      "taxonomyId": "CAT-0530",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "table-chair",
+      "categoryId": "home",
+      "subcategoryContains": [
+        "Тавилга",
+        "Ширээ, сандал"
+      ],
+      "url": "https://www.unegui.mn/ger-ahujn-baraa/tavilga/shiree--sandal/",
+      "fields": [
+        "condition"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Гэр ахуйн бараа > Тавилга > Ширээ, сандал",
+      "taxonomyId": "CAT-0533",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "books",
+      "categoryId": "hobby",
+      "subcategoryContains": [
+        "Ном, сонин, сэтгүүл"
+      ],
+      "url": "https://www.unegui.mn/hobbi-sport/nom-bichig-heregsel/",
+      "fields": [
+        "condition"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Амралт, спорт, хобби > Ном, сонин, сэтгүүл",
+      "taxonomyId": "CAT-0616",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "sports-equipment",
+      "categoryId": "hobby",
+      "subcategoryContains": [
+        "Спортын хэрэгсэл"
+      ],
+      "url": "https://www.unegui.mn/hobbi-sport/sportyin-heregsel-/",
+      "fields": [
+        "condition"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Амралт, спорт, хобби > Спортын хэрэгсэл",
+      "taxonomyId": "CAT-0631",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "fitness",
+      "categoryId": "hobby",
+      "subcategoryContains": [
+        "Спортын хэрэгсэл",
+        "Фитнесс, дасгал"
+      ],
+      "url": "https://www.unegui.mn/hobbi-sport/sportyin-heregsel-/fitness-dasgal/",
+      "fields": [
+        "condition"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Амралт, спорт, хобби > Спортын хэрэгсэл > Фитнесс, дасгал",
+      "taxonomyId": "CAT-0638",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "bicycle-group",
+      "categoryId": "hobby",
+      "subcategoryContains": [
+        "Унадаг дугуй, сэлбэг"
+      ],
+      "url": "https://www.unegui.mn/hobbi-sport/unadag-duguj--selbeg/",
+      "fields": [
+        "condition"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Амралт, спорт, хобби > Унадаг дугуй, сэлбэг",
+      "taxonomyId": "CAT-0663",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "bicycle",
+      "categoryId": "hobby",
+      "subcategoryContains": [
+        "Унадаг дугуй, сэлбэг",
+        "Унадаг дугуй"
+      ],
+      "url": "https://www.unegui.mn/hobbi-sport/unadag-duguj--selbeg/unadag-duguj-/",
+      "fields": [
+        "condition"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Амралт, спорт, хобби > Унадаг дугуй, сэлбэг > Унадаг дугуй",
+      "taxonomyId": "CAT-0664",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "health-products",
+      "categoryId": "health",
+      "subcategoryContains": [
+        "Эрүүл мэнд"
+      ],
+      "url": "https://www.unegui.mn/eruul-mend-goo-saikhan-huns/-erl-mend/",
+      "fields": [],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Эрүүл мэнд, гоо сайхан, хүнс > Эрүүл мэнд",
+      "taxonomyId": "CAT-0670",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "beauty-products",
+      "categoryId": "health",
+      "subcategoryContains": [
+        "Гоо сайхан"
+      ],
+      "url": "https://www.unegui.mn/eruul-mend-goo-saikhan-huns/goo-sajhan/",
+      "fields": [],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Эрүүл мэнд, гоо сайхан, хүнс > Гоо сайхан",
+      "taxonomyId": "CAT-0691",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "food",
+      "categoryId": "health",
+      "subcategoryContains": [
+        "Хүнс"
+      ],
+      "url": "https://www.unegui.mn/eruul-mend-goo-saikhan-huns/huns/",
+      "fields": [],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Эрүүл мэнд, гоо сайхан, хүнс > Хүнс",
+      "taxonomyId": "CAT-0698",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "perfume",
+      "categoryId": "health",
+      "subcategoryContains": [
+        "Гоо сайхан",
+        "Үнэртэй ус"
+      ],
+      "url": "https://www.unegui.mn/eruul-mend-goo-saikhan-huns/goo-sajhan/nertej-us/",
+      "fields": [
+        "perfumeType"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Эрүүл мэнд, гоо сайхан, хүнс > Гоо сайхан > Үнэртэй ус",
+      "taxonomyId": "CAT-0693",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "livestock-group",
+      "categoryId": "animals",
+      "subcategoryContains": [
+        "Мал амьтан"
+      ],
+      "url": "https://www.unegui.mn/mal-amitan/mal--amtan/",
+      "fields": [],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Мал амьтан, ургамал > Мал амьтан",
+      "taxonomyId": "CAT-0710",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "pets",
+      "categoryId": "animals",
+      "subcategoryContains": [
+        "Мал амьтан",
+        "Тэжээвэр амьтад"
+      ],
+      "url": "https://www.unegui.mn/mal-amitan/mal--amtan/pets/",
+      "fields": [],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Мал амьтан, ургамал > Мал амьтан > Тэжээвэр амьтад",
+      "taxonomyId": "CAT-0712",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "dogs",
+      "categoryId": "animals",
+      "subcategoryContains": [
+        "Мал амьтан",
+        "Тэжээвэр амьтад",
+        "Нохой"
+      ],
+      "url": "https://www.unegui.mn/mal-amitan/mal--amtan/pets/nohoj/",
+      "fields": [],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Мал амьтан, ургамал > Мал амьтан > Тэжээвэр амьтад > Нохой",
+      "taxonomyId": null,
+      "taxonomyNodeMissing": true,
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "cats",
+      "categoryId": "animals",
+      "subcategoryContains": [
+        "Мал амьтан",
+        "Тэжээвэр амьтад",
+        "Муур"
+      ],
+      "url": "https://www.unegui.mn/mal-amitan/mal--amtan/pets/muur/",
+      "fields": [],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Мал амьтан, ургамал > Мал амьтан > Тэжээвэр амьтад > Муур",
+      "taxonomyId": null,
+      "taxonomyNodeMissing": true,
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "livestock",
+      "categoryId": "animals",
+      "subcategoryContains": [
+        "Мал амьтан",
+        "Таван хошуу мал"
+      ],
+      "url": "https://www.unegui.mn/mal-amitan/mal--amtan/tavan-hoshuu-mal/",
+      "fields": [],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Мал амьтан, ургамал > Мал амьтан > Таван хошуу мал",
+      "taxonomyId": "CAT-0711",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "plants",
+      "categoryId": "animals",
+      "subcategoryContains": [
+        "Ургамал, мод, цэцэг"
+      ],
+      "url": "https://www.unegui.mn/mal-amitan/urgamalmodtsetseg/",
+      "fields": [],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Мал амьтан, ургамал > Ургамал, мод, цэцэг",
+      "taxonomyId": "CAT-0717",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "building-materials",
+      "categoryId": "equipment",
+      "subcategoryContains": [
+        "Барилгын материал"
+      ],
+      "url": "https://www.unegui.mn/thrmzh-barilgyin-material-tlsh-thij-ed/barilgyin-material/",
+      "fields": [
+        "condition"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Төхөөрөмж, материал, түлш > Барилгын материал",
+      "taxonomyId": "CAT-0546",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "tools",
+      "categoryId": "equipment",
+      "subcategoryContains": [
+        "Багаж хэрэгсэл"
+      ],
+      "url": "https://www.unegui.mn/thrmzh-barilgyin-material-tlsh-thij-ed/bagazh-heregsel/",
+      "fields": [
+        "condition"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Төхөөрөмж, материал, түлш > Багаж хэрэгсэл",
+      "taxonomyId": "CAT-0591",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "building-tools",
+      "categoryId": "equipment",
+      "subcategoryContains": [
+        "Багаж хэрэгсэл",
+        "Барилгын багаж"
+      ],
+      "url": "https://www.unegui.mn/thrmzh-barilgyin-material-tlsh-thij-ed/bagazh-heregsel/barilgyin-bagazh/",
+      "fields": [
+        "condition"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Төхөөрөмж, материал, түлш > Багаж хэрэгсэл > Барилгын багаж",
+      "taxonomyId": "CAT-0592",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "equipment",
+      "categoryId": "equipment",
+      "subcategoryContains": [
+        "Тоног төхөөрөмж"
+      ],
+      "url": "https://www.unegui.mn/thrmzh-barilgyin-material-tlsh-thij-ed/tonog-thrmzh--bagazh-heregsel/",
+      "fields": [
+        "condition"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Төхөөрөмж, материал, түлш > Тоног төхөөрөмж",
+      "taxonomyId": "CAT-0569",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "building-equipment",
+      "categoryId": "equipment",
+      "subcategoryContains": [
+        "Тоног төхөөрөмж",
+        "Барилгын тоног төхөөрөмж"
+      ],
+      "url": "https://www.unegui.mn/thrmzh-barilgyin-material-tlsh-thij-ed/tonog-thrmzh--bagazh-heregsel/barilgiin-bagaj-tonog-tuhuurumj/",
+      "fields": [
+        "condition"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Төхөөрөмж, материал, түлш > Тоног төхөөрөмж > Барилгын тоног төхөөрөмж",
+      "taxonomyId": "CAT-0572",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "training-service",
+      "categoryId": "services",
+      "subcategoryContains": [
+        "Сургалт, курс"
+      ],
+      "url": "https://www.unegui.mn/jlchilgee/surgalt--kurs-/",
+      "fields": [],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Үйлчилгээ > Сургалт, курс",
+      "taxonomyId": "CAT-0766",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "building-service",
+      "categoryId": "services",
+      "subcategoryContains": [
+        "Барилгын бүх ажил"
+      ],
+      "url": "https://www.unegui.mn/jlchilgee/barilgyin-bh-azhil/",
+      "fields": [],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Үйлчилгээ > Барилгын бүх ажил",
+      "taxonomyId": "CAT-0725",
+      "match": "path-equals-or-descendant"
+    },
+    {
+      "id": "transport-service",
+      "categoryId": "services",
+      "subcategoryContains": [
+        "Нүүлгэлт, тээвэр"
+      ],
+      "url": "https://www.unegui.mn/jlchilgee/-nlgeltteever/",
+      "fields": [
+        "transportPayload"
+      ],
+      "inheritRoot": true,
+      "coverage": "public-filter-labels-observed",
+      "selectOptionsMayBeIncomplete": false,
+      "taxonomyPath": "Үйлчилгээ > Нүүлгэлт, тээвэр",
+      "taxonomyId": "CAT-0762",
+      "match": "path-equals-or-descendant"
+    }
+  ]
+}

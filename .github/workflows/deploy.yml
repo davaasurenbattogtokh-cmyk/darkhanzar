@@ -1,0 +1,29 @@
+name: Deploy to VPS
+# main салбарт push хийх бүрт шалгалт амжилттай болсны дараа darkhanzar.mn шинэчлэгдэнэ.
+on:
+  workflow_run:
+    workflows: [Check Darkhanzar]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH-ээр VPS дээр deploy.sh ажиллуулах
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts
+          ssh -i ~/.ssh/id_deploy "$VPS_USER@$VPS_HOST" 'bash ~/app/deploy/deploy.sh'
