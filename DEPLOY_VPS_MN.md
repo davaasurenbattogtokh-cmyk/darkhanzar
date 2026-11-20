@@ -44,6 +44,21 @@ git push
 GitHub → Actions таб дээр **Check Darkhanzar** → **Deploy to VPS** ногоон болбол сайт шинэчлэгдсэн.
 Шалгалт унавал deploy хийгдэхгүй (эвдэрсэн код production руу орохгүй).
 
+## Google-ээр нэвтрэх
+
+1. https://console.cloud.google.com → төсөл → **Google Auth Platform** (OAuth consent screen): External, апп нэр `Darkhanzar`, домэйн `darkhanzar.mn`, scope: `openid`, `email`, `profile`. **Publish app** (In production).
+2. **Clients → Create client → Web application**:
+   - Authorized JavaScript origins: `https://darkhanzar.mn`
+   - Authorized redirect URIs: `https://darkhanzar.mn/api/auth/google/callback`
+3. VPS дээр `nano /home/darkhanzar/app/.env`:
+   ```
+   GOOGLE_CLIENT_ID=....apps.googleusercontent.com
+   GOOGLE_CLIENT_SECRET=...
+   ```
+   дараа нь `sudo -iu darkhanzar pm2 reload darkhanzar --update-env`.
+
+Хоёр утга тохирсон үед л товч идэвхжинэ. Ижил баталгаажсан и-мэйлтэй бүртгэл байвал түүгээр нэвтэрнэ; шинэ хэрэглэгчид энгийн (user) эрхтэй үүснэ. Админ бүртгэлийг Google-ээр шинээр үүсгэх боломжгүй (зөвхөн /setup).
+
 ## Хэрэгтэй командууд (VPS дээр)
 
 ```sh
