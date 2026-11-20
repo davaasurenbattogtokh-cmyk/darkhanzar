@@ -2,7 +2,8 @@
 # Darkhanzar — Hostinger VPS (Ubuntu 22.04/24.04) анхны тохиргоо.
 # root эрхээр НЭГ УДАА ажиллуулна:
 #   curl -fsSL https://raw.githubusercontent.com/<OWNER>/darkhanzar/main/deploy/setup-vps.sh -o setup-vps.sh
-#   sudo DOMAIN=darkhanzar.mn REPO=git@github.com:<OWNER>/darkhanzar.git ADMIN_EMAIL=you@example.mn bash setup-vps.sh
+#   sudo DOMAIN=darkhanzar.mn REPO=https://github.com/<OWNER>/darkhanzar.git ADMIN_EMAIL=you@example.mn bash setup-vps.sh
+#   (private repo бол REPO=git@github.com:<OWNER>/darkhanzar.git — deploy key үүсгэнэ)
 set -euo pipefail
 
 DOMAIN="${DOMAIN:-darkhanzar.mn}"
@@ -42,7 +43,8 @@ id "$APP_USER" >/dev/null 2>&1 || adduser --disabled-password --gecos "" "$APP_U
 sudo -H -u "$APP_USER" mkdir -p "/home/${APP_USER}/.ssh"
 chmod 700 "/home/${APP_USER}/.ssh"
 
-echo "==> GitHub deploy key (VPS нь repo-оос татахад)"
+if [[ "$REPO" == git@* ]]; then
+echo "==> GitHub deploy key (private repo-оос татахад)"
 KEY="/home/${APP_USER}/.ssh/github_deploy"
 if [ ! -f "$KEY" ]; then
   sudo -H -u "$APP_USER" ssh-keygen -t ed25519 -N "" -C "darkhanzar-vps-deploy" -f "$KEY"
@@ -59,6 +61,7 @@ echo "GitHub → repo → Settings → Deploy keys → Add deploy key (read-only
 cat "${KEY}.pub"
 echo "------------------------------------------------------------------"
 read -r -p "Түлхүүрийг GitHub-д нэмсний дараа Enter дарна уу..." _ </dev/tty
+fi
 
 echo "==> GitHub Actions-д зориулсан SSH түлхүүр (push бүрт автомат deploy)"
 ACTIONS_KEY="/root/darkhanzar-actions-key"
@@ -136,7 +139,7 @@ echo "==> Build + эхлүүлэх"
 sudo -H -u "$APP_USER" bash "${APP_DIR}/deploy/deploy.sh"
 
 echo "==> SSL (DNS darkhanzar.mn → энэ VPS-ийн IP болсон байх ёстой)"
-if certbot --nginx -d "$DOMAIN" -d "www.${DOMAIN}" --non-interactive --agree-tos -m "$ADMIN_EMAIL" --redirect; then
+if certbot --nginx -d "$DOMAIN" -d "www.${DOMAIN}" --non-interactive --agree-tos --register-unsafely-without-email --redirect; then
   echo "SSL амжилттай."
 else
   echo "SSL одоохондоо амжилтгүй. DNS тархсаны дараа дахин ажиллуулна:"
