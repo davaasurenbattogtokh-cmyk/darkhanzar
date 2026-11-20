@@ -6,6 +6,7 @@ import {createPool,MySQLDatabase,MySQLBucket} from './server/node/mysql.mjs';
 import {migrate} from './server/node/migrate.mjs';
 import {handleApplication} from './server/node/application.mjs';
 import {startScheduler} from './server/node/scheduler.mjs';
+import {writeHeaders} from './server/node/headers.mjs';
 
 // Explicit canonical origin: never trust visitor-supplied forwarding headers.
 const origin=new URL(process.env.APP_ORIGIN||'http://localhost:3000').origin;
@@ -24,7 +25,7 @@ router.use(async(req,res)=>{
   const request=new Request(url,{method:req.method,headers,...(!['GET','HEAD'].includes(req.method)?{body:Readable.toWeb(req),duplex:'half'}:{})});
   const response=await handleApplication(request,env,pool,req.socket.remoteAddress);
   if(!response){await handler(req,res);return;}
-  res.statusCode=response.status;for(const [key,value] of response.headers)res.setHeader(key,value);
+  res.statusCode=response.status;writeHeaders(res,response.headers);
   if(response.body&&req.method!=='HEAD'){await new Promise((resolve,reject)=>{const stream=Readable.fromWeb(response.body);stream.on('error',reject);res.on('finish',resolve);res.on('close',resolve);stream.pipe(res);});}else res.end();
  }catch{console.error('Application request failed.');if(!res.headersSent)res.status(503).json({error:'Үйлчилгээ түр боломжгүй байна.'});else res.end();}
 });
