@@ -8,8 +8,9 @@ function GoogleMark(){return <svg viewBox="0 0 24 24" aria-hidden="true"><path f
 function FacebookMark(){return <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M24 12a12 12 0 1 0-13.88 11.85v-8.38H7.08V12h3.04V9.36c0-3.01 1.79-4.67 4.53-4.67 1.31 0 2.68.23 2.68.23v2.95h-1.51c-1.49 0-1.95.93-1.95 1.88V12h3.32l-.53 3.47h-2.79v8.38A12 12 0 0 0 24 12Z"/></svg>;}
 
 export default function LoginChoices({onDemo}:{onDemo:()=>void}){
- const [google,setGoogle]=useState(false);
- useEffect(()=>{const controller=new AbortController();fetch('/api/auth/providers',{cache:'no-store',signal:controller.signal}).then(r=>r.ok?r.json():null).then((d:{google?:boolean}|null)=>setGoogle(d?.google===true)).catch(()=>{});return()=>controller.abort();},[]);
+ const [google,setGoogle]=useState(false),[facebook,setFacebook]=useState(false);
+ useEffect(()=>{const controller=new AbortController();fetch('/api/auth/providers',{cache:'no-store',signal:controller.signal}).then(r=>r.ok?r.json():null).then((d:{google?:boolean;facebook?:boolean}|null)=>{setGoogle(d?.google===true);setFacebook(d?.facebook===true);}).catch(()=>{});return()=>controller.abort();},[]);
+ const missing=[!google&&'Google',!facebook&&'Facebook'].filter(Boolean).join(', ');
  return <div className="login-body social-login-body">
   <div className="social-login-brand"><Logo/></div>
   <p className="social-login-intro">Ойрхон хай. Амархан ол.<br/><span>Нэвтрэх аргаа сонгоорой.</span></p>
@@ -17,9 +18,11 @@ export default function LoginChoices({onDemo}:{onDemo:()=>void}){
    {google
     ?<a href={`/api/auth/google?return_to=${MINE_RETURN}`} target="_top" className="social-provider google-provider"><GoogleMark/><span>Google-ээр нэвтрэх<small>Gmail бүртгэлээрээ</small></span></a>
     :<button type="button" className="social-provider google-provider" disabled aria-describedby="social-connection-status"><GoogleMark/><span>Google-ээр нэвтрэх<small>Gmail бүртгэлээрээ</small></span><span className="social-provider-status">Холбогдоогүй</span></button>}
-   <button type="button" className="social-provider facebook-provider" disabled aria-describedby="social-connection-status"><FacebookMark/><span>Facebook-ээр нэвтрэх<small>Facebook бүртгэлээрээ</small></span><span className="social-provider-status">Холбогдоогүй</span></button>
+   {facebook
+    ?<a href={`/api/auth/facebook?return_to=${MINE_RETURN}`} target="_top" className="social-provider facebook-provider"><FacebookMark/><span>Facebook-ээр нэвтрэх<small>Facebook бүртгэлээрээ</small></span></a>
+    :<button type="button" className="social-provider facebook-provider" disabled aria-describedby="social-connection-status"><FacebookMark/><span>Facebook-ээр нэвтрэх<small>Facebook бүртгэлээрээ</small></span><span className="social-provider-status">Холбогдоогүй</span></button>}
   </div>
-  <p id="social-connection-status" className="social-login-status"><Icon name="info"/><span>{google?'Facebook нэвтрэх үйлчилгээ одоогоор холбогдоогүй байна.':'Google, Facebook нэвтрэх үйлчилгээ одоогоор холбогдоогүй байна.'}</span></p>
+  {missing&&<p id="social-connection-status" className="social-login-status"><Icon name="info"/><span>{missing} нэвтрэх үйлчилгээ одоогоор холбогдоогүй байна.</span></p>}
   <details className="social-demo"><summary>Туршилтын хувилбарыг үзэх</summary><p>Зар нэмэх урсгалыг зөвхөн энэ хөтөчид туршина. Google, Facebook бүртгэлээр нэвтрэхгүй.</p><button type="button" className="button button-outline full-width" onClick={onDemo}>Туршилтын эрхээр үргэлжлүүлэх <Icon name="arrow-right"/></button></details>
  </div>;
 }

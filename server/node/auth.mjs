@@ -1,4 +1,4 @@
-import {scrypt as scryptCallback,randomBytes,createHash,timingSafeEqual} from 'node:crypto';
+import {scrypt as scryptCallback,randomBytes,createHash,createHmac,timingSafeEqual} from 'node:crypto';
 import {promisify} from 'node:util';
 const scrypt=promisify(scryptCallback),ttl=7*86400000;
 const digest=value=>createHash('sha256').update(value).digest('hex');
@@ -15,6 +15,9 @@ export function sessionCookie(token,secure,expired=false){return `${secure?'__Ho
 export const googleReady=env=>/^[\w.-]+\.apps\.googleusercontent\.com$/.test(env?.GOOGLE_CLIENT_ID||'')&&!!env?.GOOGLE_CLIENT_SECRET;
 const oauthCookie=(value,secure,expired=false)=>`${secure?'__Host-':''}dz_oauth=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${expired?0:600}${secure?'; Secure':''}`;
 const readCookie=(request,name)=>(request.headers.get('cookie')||'').split(';').map(x=>x.trim()).find(x=>x.startsWith(name+'='))?.slice(name.length+1);
+// Facebook Login (manual OAuth code flow). Accounts are linked by Facebook user id, never by email alone.
+export const facebookReady=env=>/^\d{5,20}$/.test(env?.FACEBOOK_APP_ID||'')&&/^[a-f0-9]{32}$/i.test(env?.FACEBOOK_APP_SECRET||'');
+const facebookCookie=(value,secure,expired=false)=>`${secure?'__Host-':''}dz_fboauth=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${expired?0:600}${secure?'; Secure':''}`;
 const sameText=(a,b)=>typeof a==='string'&&typeof b==='string'&&a.length===b.length&&a.length>0&&timingSafeEqual(Buffer.from(a),Buffer.from(b));
 export async function authenticatedUser(request,pool){
  const secure=new URL(request.url).protocol==='https:',name=secure?'__Host-dz_session':'dz_session';
@@ -27,11 +30,12 @@ export function trustedHeaders(request,user){
  if(user){headers.set('oai-authenticated-user-id',user.id);headers.set('oai-authenticated-user-full-name',encodeURIComponent(user.name));headers.set('oai-authenticated-user-full-name-encoding','percent-encoded-utf-8');if(user.role==='admin')headers.set('oai-authenticated-user-email',user.email);}
  return headers;
 }
-function page(kind,next,error='',google=false){
+function page(kind,next,error='',google=false,facebook=false){
  const register=kind==='register',setup=kind==='setup',logout=kind==='logout';const title=logout?'Гарах':setup?'Админы анхны тохиргоо':register?'Бүртгэл үүсгэх':'Нэвтрэх';
- const googleLink=google&&!setup&&!logout?`<a class="google" href="/api/auth/google?return_to=${encodeURIComponent(next)}">Google-ээр ${register?'бүртгүүлэх':'нэвтрэх'}</a><p class="or">эсвэл и-мэйлээр</p>`:'';
+ const verb=register?'бүртгүүлэх':'нэвтрэх',social=!setup&&!logout;
+ const googleLink=(social&&google?`<a class="google" href="/api/auth/google?return_to=${encodeURIComponent(next)}">Google-ээр ${verb}</a>`:'')+(social&&facebook?`<a class="google" href="/api/auth/facebook?return_to=${encodeURIComponent(next)}">Facebook-ээр ${verb}</a>`:'')+(social&&(google||facebook)?'<p class="or">эсвэл и-мэйлээр</p>':'');
  const form=logout?'<button>Бүртгэлээс гарах</button>':`${setup?'<label>Тохиргооны түлхүүр<input name="setup_token" type="password" required autocomplete="off"></label>':''}${register||setup?'<label>Нэр<input name="name" maxlength="100" required autocomplete="name"></label>':''}<label>И-мэйл<input name="email" type="email" required autocomplete="username" maxlength="191"></label><label>Нууц үг<input name="password" type="password" required minlength="12" maxlength="128" autocomplete="${register||setup?'new-password':'current-password'}"></label><button>${title}</button>`;
- const html=`<!doctype html><html lang="mn"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title} · Darkhanzar</title><style>body{margin:0;background:#fff5e8;color:#101c45;font:16px system-ui,sans-serif;display:grid;min-height:100vh;place-items:center}.card{background:white;border-radius:24px;padding:32px;max-width:420px;width:calc(100% - 88px);box-shadow:0 12px 50px #101c4510}h1{font-size:28px}a{color:#101c45}label{display:block;margin:18px 0;font-weight:600}input,button{box-sizing:border-box;width:100%;padding:14px;margin-top:8px;border:1px solid #d7dae2;border-radius:10px;font:inherit}button{background:#101c45;color:white;font-weight:700;cursor:pointer}.error{color:#ac2020;background:#fff0ed;padding:12px;border-radius:10px}small{color:#586174;line-height:1.5}.google{display:block;text-align:center;padding:14px;border:1px solid #d7dae2;border-radius:10px;text-decoration:none;font-weight:700;margin-top:8px}.or{text-align:center;color:#586174;margin:18px 0 0}</style><main class="card"><a href="/">darkhan<strong style="color:#f28b16">zar</strong></a><h1>${title}</h1>${error?`<p role="alert" class="error">${escape(error)}</p>`:''}${googleLink}<form method="post" action="/api/auth/${kind}"><input type="hidden" name="return_to" value="${escape(next)}">${form}</form><p>${logout?'<a href="/">Буцах</a>':setup?'Тохиргооны түлхүүрийг Hostinger-ийн SETUP_TOKEN утгаас авна.':register?'<a href="/login">Бүртгэлтэй бол нэвтрэх</a>':'<a href="/register">Шинээр бүртгүүлэх</a>'}</p><small>И-мэйл болон утасны дугаар баталгаажуулах үйлчилгээ хараахан холбогдоогүй. ${google?'Facebook нэвтрэлт':'Google, Facebook нэвтрэлт'} тусдаа холболт шаардлагатай.</small>${setup||logout?'':'<p><small><a href="/privacy">Нууцлалын бодлого</a> · <a href="/terms">Үйлчилгээний нөхцөл</a></small></p>'}</main></html>`;
+ const html=`<!doctype html><html lang="mn"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title} · Darkhanzar</title><style>body{margin:0;background:#fff5e8;color:#101c45;font:16px system-ui,sans-serif;display:grid;min-height:100vh;place-items:center}.card{background:white;border-radius:24px;padding:32px;max-width:420px;width:calc(100% - 88px);box-shadow:0 12px 50px #101c4510}h1{font-size:28px}a{color:#101c45}label{display:block;margin:18px 0;font-weight:600}input,button{box-sizing:border-box;width:100%;padding:14px;margin-top:8px;border:1px solid #d7dae2;border-radius:10px;font:inherit}button{background:#101c45;color:white;font-weight:700;cursor:pointer}.error{color:#ac2020;background:#fff0ed;padding:12px;border-radius:10px}small{color:#586174;line-height:1.5}.google{display:block;text-align:center;padding:14px;border:1px solid #d7dae2;border-radius:10px;text-decoration:none;font-weight:700;margin-top:8px}.or{text-align:center;color:#586174;margin:18px 0 0}</style><main class="card"><a href="/">darkhan<strong style="color:#f28b16">zar</strong></a><h1>${title}</h1>${error?`<p role="alert" class="error">${escape(error)}</p>`:''}${googleLink}<form method="post" action="/api/auth/${kind}"><input type="hidden" name="return_to" value="${escape(next)}">${form}</form><p>${logout?'<a href="/">Буцах</a>':setup?'Тохиргооны түлхүүрийг Hostinger-ийн SETUP_TOKEN утгаас авна.':register?'<a href="/login">Бүртгэлтэй бол нэвтрэх</a>':'<a href="/register">Шинээр бүртгүүлэх</a>'}</p><small>И-мэйл болон утасны дугаар баталгаажуулах үйлчилгээ хараахан холбогдоогүй.${google&&facebook?'':` ${[!google&&'Google',!facebook&&'Facebook'].filter(Boolean).join(', ')} нэвтрэлт тусдаа холболт шаардлагатай.`}</small>${setup||logout?'':'<p><small><a href="/privacy">Нууцлалын бодлого</a> · <a href="/terms">Үйлчилгээний нөхцөл</a></small></p>'}</main></html>`;
  return new Response(html,{headers:{'Content-Type':'text/html;charset=utf-8','Cache-Control':'no-store','Content-Security-Policy':"default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",'Referrer-Policy':'same-origin','X-Content-Type-Options':'nosniff'}});
 }
 async function limitedForm(request){
@@ -58,7 +62,7 @@ async function googleStart(url,env,next,secure){
 async function googleCallback(request,url,pool,env,ip,secure,fetcher){
  const [state,verifier,encodedReturn]=(readCookie(request,(secure?'__Host-':'')+'dz_oauth')||'').split('.');
  const clear=oauthCookie('',secure,true);
- const fail=message=>{const response=page('login','/',message,googleReady(env));response.headers.append('Set-Cookie',clear);return response;};
+ const fail=message=>{const response=page('login','/',message,googleReady(env),facebookReady(env));response.headers.append('Set-Cookie',clear);return response;};
  if(!googleReady(env))return fail('Google нэвтрэлт одоогоор тохируулагдаагүй байна.');
  if(!verifier||!sameText(url.searchParams.get('state'),state))return fail('Нэвтрэх хугацаа дууссан эсвэл хүсэлт таарахгүй байна. Дахин оролдоно уу.');
  const code=url.searchParams.get('code');if(url.searchParams.get('error')||!code)return fail('Google-ээр нэвтрэхийг цуцаллаа.');
@@ -86,11 +90,58 @@ async function googleCallback(request,url,pool,env,ip,secure,fetcher){
  let destination='/';try{destination=safeReturn(Buffer.from(encodedReturn||'','base64url').toString('utf8'));}catch{}
  return newSession(pool,user,secure,destination,clear);
 }
+function facebookStart(url,env,next,secure){
+ const state=randomBytes(24).toString('base64url');
+ const target=new URL('https://www.facebook.com/dialog/oauth');
+ target.search=new URLSearchParams({client_id:env.FACEBOOK_APP_ID,redirect_uri:url.origin+'/api/auth/facebook/callback',response_type:'code',scope:'public_profile,email',state}).toString();
+ return new Response(null,{status:302,headers:{Location:target.href,'Cache-Control':'no-store','Set-Cookie':facebookCookie(`${state}.${Buffer.from(next).toString('base64url')}`,secure)}});
+}
+async function facebookCallback(request,url,pool,env,ip,secure,fetcher){
+ const [state,encodedReturn]=(readCookie(request,(secure?'__Host-':'')+'dz_fboauth')||'').split('.');
+ const clear=facebookCookie('',secure,true);
+ const fail=message=>{const response=page('login','/',message,googleReady(env),facebookReady(env));response.headers.append('Set-Cookie',clear);return response;};
+ if(!facebookReady(env))return fail('Facebook нэвтрэлт одоогоор тохируулагдаагүй байна.');
+ if(!sameText(url.searchParams.get('state'),state))return fail('Нэвтрэх хугацаа дууссан эсвэл хүсэлт таарахгүй байна. Дахин оролдоно уу.');
+ const code=url.searchParams.get('code');if(url.searchParams.get('error')||!code)return fail('Facebook-ээр нэвтрэхийг цуцаллаа.');
+ if(await rateLimit(pool,'ip:'+ip,100))return new Response('Олон оролдлого хийсэн байна. 15 минутын дараа оролдоно уу.',{status:429});
+ let profile;
+ try{
+  const tokenUrl=new URL('https://graph.facebook.com/oauth/access_token');
+  tokenUrl.search=new URLSearchParams({client_id:env.FACEBOOK_APP_ID,client_secret:env.FACEBOOK_APP_SECRET,redirect_uri:url.origin+'/api/auth/facebook/callback',code}).toString();
+  const tokenResponse=await fetcher(tokenUrl.href,{signal:AbortSignal.timeout(15000)});const token=await tokenResponse.json();
+  if(!tokenResponse.ok||typeof token.access_token!=='string')throw Error('token');
+  // appsecret_proof ties the token to this app's secret, as Facebook recommends for server calls.
+  const proof=createHmac('sha256',env.FACEBOOK_APP_SECRET).update(token.access_token).digest('hex');
+  const meUrl=new URL('https://graph.facebook.com/me');meUrl.search=new URLSearchParams({fields:'id,name,email',access_token:token.access_token,appsecret_proof:proof}).toString();
+  const meResponse=await fetcher(meUrl.href,{signal:AbortSignal.timeout(15000)});profile=await meResponse.json();
+  if(!meResponse.ok||!/^\d{1,30}$/.test(String(profile?.id||'')))throw Error('me');
+ }catch{return fail('Facebook-тэй холбогдож чадсангүй. Дахин оролдоно уу.');}
+ const subject=String(profile.id);
+ let [rows]=await pool.execute('SELECT u.id,u.email,u.name,u.role FROM auth_identities i JOIN auth_users u ON u.id=i.user_id WHERE i.provider=? AND i.subject=?',['facebook',subject]);let user=rows[0];
+ if(!user){
+  const email=typeof profile.email==='string'?profile.email.trim().toLowerCase():'';
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||email.length>191)return fail('Facebook бүртгэлээс и-мэйл хаяг ирсэнгүй. Facebook-т и-мэйл нэмэх эсвэл и-мэйл хандах зөвшөөрөл өгөөд дахин оролдоно уу.');
+  if(email===(env.ADMIN_EMAIL||'').trim().toLowerCase())return fail('Энэ хаягаар бүртгүүлэх боломжгүй.');
+  const [existing]=await pool.execute('SELECT id FROM auth_users WHERE email=?',[email]);
+  // An email-only match is not proof of ownership on Facebook, so existing accounts are never taken over.
+  if(existing.length)return fail('Энэ и-мэйлээр бүртгэл аль хэдийн байна. И-мэйл, нууц үг эсвэл Google-ээр нэвтэрнэ үү.');
+  const name=((typeof profile.name==='string'&&profile.name.trim())||email.split('@')[0]).slice(0,100);
+  user={id:crypto.randomUUID(),email,name,role:'user'};
+  try{
+   await pool.execute('INSERT INTO auth_users (id,email,name,password_hash,role,created_at) VALUES (?,?,?,?,?,?)',[user.id,email,name,'!facebook','user',Date.now()]);
+   await pool.execute('INSERT INTO auth_identities (provider,subject,user_id,created_at) VALUES (?,?,?,?)',['facebook',subject,user.id,Date.now()]);
+  }catch(error){if(error.code!=='ER_DUP_ENTRY')throw error;return fail('Бүртгэл үүсгэж чадсангүй. Дахин оролдоно уу.');}
+ }
+ let destination='/';try{destination=safeReturn(Buffer.from(encodedReturn||'','base64url').toString('utf8'));}catch{}
+ return newSession(pool,user,secure,destination,clear);
+}
 export async function handleAuth(request,pool,env,ip='unknown',{fetcher=fetch}={}){
- const url=new URL(request.url),kind=url.pathname.slice('/api/auth/'.length),next=safeReturn(url.searchParams.get('return_to')),pg=(k,n,e)=>page(k,n,e,googleReady(env));
+ const url=new URL(request.url),kind=url.pathname.slice('/api/auth/'.length),next=safeReturn(url.searchParams.get('return_to')),pg=(k,n,e)=>page(k,n,e,googleReady(env),facebookReady(env));
  if(['/login','/register','/setup','/logout'].includes(url.pathname)&&request.method==='GET')return pg(url.pathname.slice(1),next);
  if(!url.pathname.startsWith('/api/auth/'))return null;
- if(request.method==='GET'&&kind==='providers')return Response.json({google:googleReady(env),facebook:false},{headers:{'Cache-Control':'no-store'}});
+ if(request.method==='GET'&&kind==='providers')return Response.json({google:googleReady(env),facebook:facebookReady(env)},{headers:{'Cache-Control':'no-store'}});
+ if(request.method==='GET'&&kind==='facebook')return facebookReady(env)?facebookStart(url,env,next,url.protocol==='https:'):pg('login',next,'Facebook нэвтрэлт одоогоор тохируулагдаагүй байна.');
+ if(request.method==='GET'&&kind==='facebook/callback')return facebookCallback(request,url,pool,env,ip,url.protocol==='https:',fetcher);
  if(request.method==='GET'&&kind==='google')return googleReady(env)?googleStart(url,env,next,url.protocol==='https:'):pg('login',next,'Google нэвтрэлт одоогоор тохируулагдаагүй байна.');
  if(request.method==='GET'&&kind==='google/callback')return googleCallback(request,url,pool,env,ip,url.protocol==='https:',fetcher);
  if(request.method!=='POST'||!['login','register','setup','logout'].includes(kind))return new Response('Not found',{status:404});

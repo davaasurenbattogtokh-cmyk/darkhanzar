@@ -59,6 +59,15 @@ GitHub → Actions таб дээр **Check Darkhanzar** → **Deploy to VPS** н
 
 Хоёр утга тохирсон үед л товч идэвхжинэ. Ижил баталгаажсан и-мэйлтэй бүртгэл байвал түүгээр нэвтэрнэ; шинэ хэрэглэгчид энгийн (user) эрхтэй үүснэ. Админ бүртгэлийг Google-ээр шинээр үүсгэх боломжгүй (зөвхөн /setup).
 
+## Facebook-ээр нэвтрэх
+
+1. https://developers.facebook.com/apps → **Create app** → Use case: **Authenticate and request data from users with Facebook Login** → апп нэр `Darkhanzar`.
+2. Facebook Login → Settings → **Valid OAuth Redirect URIs**: `https://darkhanzar.mn/api/auth/facebook/callback`. Permissions: `public_profile`, `email`.
+3. App settings → Basic: App domains `darkhanzar.mn`, Privacy Policy URL `https://darkhanzar.mn/privacy`, Terms `https://darkhanzar.mn/terms`, User data deletion → Data deletion instructions URL `https://darkhanzar.mn/privacy#delete`, ангилал, 1024×1024 icon. Дараа нь **Publish** (Live).
+4. VPS `.env`: `FACEBOOK_APP_ID=` (тоо), `FACEBOOK_APP_SECRET=` (32 тэмдэгт) → `sudo -iu darkhanzar pm2 reload darkhanzar --update-env`.
+
+Facebook бүртгэлийг Facebook ID-аар холбоно. Тухайн и-мэйлээр өөр бүртгэл байвал Facebook-ээр түүнд нэвтрүүлэхгүй (и-мэйл/Google-ээр нэвтэрнэ).
+
 ## Хэрэгтэй командууд (VPS дээр)
 
 ```sh
