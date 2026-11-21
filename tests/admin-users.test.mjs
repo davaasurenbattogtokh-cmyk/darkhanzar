@@ -8,14 +8,14 @@ function fixture(){
  const users=[{id:'owner-id',email:'owner@example.test',name:'Эзэн',role:'admin',password_hash:'x',created_at:1}];
  const sessions=[{user_id:'owner-id'}],identities=[],audit=[];
  const exec=(sql,a)=>{
-  if(sql.startsWith("SELECT id,email,name,created_at FROM auth_users WHERE role='admin'"))return users.filter(u=>u.role==='admin');
+  if(sql.startsWith("SELECT id,email,name,role,created_at FROM auth_users WHERE role IN"))return users.filter(u=>['admin','editor'].includes(u.role));
   if(sql.startsWith('SELECT id FROM auth_users WHERE email=?'))return users.filter(u=>u.email===a[0]);
-  if(sql.startsWith("SELECT id,email,name FROM auth_users WHERE id=? AND role='admin'"))return users.filter(u=>u.id===a[0]&&u.role==='admin');
-  if(sql.startsWith('INSERT INTO auth_users')){users.push({id:a[0],email:a[1],name:a[2],password_hash:a[3],role:'admin',created_at:a[4]});return [];}
+  if(sql.startsWith("SELECT id,email,name,role FROM auth_users WHERE id=? AND role IN"))return users.filter(u=>u.id===a[0]&&['admin','editor'].includes(u.role));
+  if(sql.startsWith('INSERT INTO auth_users')){users.push({id:a[0],email:a[1],name:a[2],password_hash:a[3],role:a[4],created_at:a[5]});return [];}
   if(sql.startsWith('UPDATE auth_users SET password_hash')){users.find(u=>u.id===a[1]).password_hash=a[0];return [];}
   if(sql.startsWith('DELETE FROM auth_sessions')){for(let i=sessions.length-1;i>=0;i--)if(sessions[i].user_id===a[0])sessions.splice(i,1);return [];}
   if(sql.startsWith('DELETE FROM auth_identities'))return [];
-  if(sql.startsWith('DELETE FROM auth_users')){const i=users.findIndex(u=>u.id===a[0]&&u.role==='admin');if(i>=0)users.splice(i,1);return [];}
+  if(sql.startsWith('DELETE FROM auth_users')){const i=users.findIndex(u=>u.id===a[0]&&['admin','editor'].includes(u.role));if(i>=0)users.splice(i,1);return [];}
   if(sql.startsWith('INSERT INTO admin_audit')){audit.push(a[1]);return [];}
   throw Error('unexpected SQL '+sql);
  };
@@ -69,4 +69,16 @@ test('Primary admin resets a password (ending that admin\'s sessions) and remove
  assert.equal((await handleAdminAPI(req('DELETE',{id:'owner-id'}),f.env)).status,403);
  assert.equal((await handleAdminAPI(req('DELETE',{id:'b'}),f.env)).status,200);assert.equal(f.users.some(u=>u.id==='b'),false);
  assert.equal((await handleAdminAPI(req('DELETE',{id:'b'}),f.env)).status,404);
+});
+
+test('Primary admin can create an editor; editors are listed with their role and are not admins',async()=>{
+ const f=fixture();
+ const r=await handleAdminAPI(req('POST',{name:'Редактор',email:'editor@example.mn',password:'strong-password-1',role:'editor'}),f.env);
+ assert.equal(r.status,201);assert.equal(f.users.find(u=>u.email==='editor@example.mn').role,'editor');assert.deepEqual(f.audit,['editor.create:editor@example.mn']);
+ assert.equal((await handleAdminAPI(req('POST',{name:'Буруу',email:'bad@example.mn',password:'strong-password-1',role:'owner'}),f.env)).status,400);
+ const list=await (await handleAdminAPI(req('GET'),f.env)).json();assert.deepEqual(list.admins.map(a=>a.role),['admin','editor']);
+ const editor={id:f.users.at(-1).id,email:'editor@example.mn',role:'editor'};
+ assert.equal(adminIdentity(new Request(origin+'/',{headers:{'oai-authenticated-user-id':editor.id,'oai-authenticated-user-role':'editor'}}),f.env).authorized,false);
+ assert.equal(trustedHeaders(new Request(origin+'/'),{id:'e',name:'E',email:'e@x.mn',role:'editor'}).get('oai-authenticated-user-role'),'editor');
+ assert.equal(trustedHeaders(new Request(origin+'/'),{id:'e',name:'E',email:'e@x.mn',role:'editor'}).has('oai-authenticated-user-email'),false);
 });

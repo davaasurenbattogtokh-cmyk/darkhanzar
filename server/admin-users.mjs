@@ -11,8 +11,8 @@ export async function handleAdmins(request,env,identity,sameOrigin){
  const list=async(sql,...args)=>(await env.DB.prepare(sql).bind(...args).all()).results||[];
  const primaryEmail=(env.ADMIN_EMAIL||'').trim().toLowerCase();
  if(request.method==='GET'){
-  const rows=await list("SELECT id,email,name,created_at FROM auth_users WHERE role='admin' ORDER BY created_at");
-  return json({admins:rows.map(r=>({id:r.id,email:r.email,name:r.name,createdAt:Number(r.created_at),primary:r.email===primaryEmail})),canManage:identity.primary===true});
+  const rows=await list("SELECT id,email,name,role,created_at FROM auth_users WHERE role IN ('admin','editor') ORDER BY created_at");
+  return json({admins:rows.map(r=>({id:r.id,email:r.email,name:r.name,role:r.role==='editor'?'editor':'admin',createdAt:Number(r.created_at),primary:r.email===primaryEmail})),canManage:identity.primary===true});
  }
  if(identity.primary!==true)return json({error:'Админ нэмэх, хасах эрх зөвхөн үндсэн админд бий.'},403);
  if(!sameOrigin)return json({error:'Хүсэлтийн эх сурвалж буруу байна.'},403);
@@ -20,18 +20,19 @@ export async function handleAdmins(request,env,identity,sameOrigin){
  const raw=await request.text();if(raw.length>4096)return json({error:'Мэдээлэл хэт их байна.'},413);
  let input;try{input=JSON.parse(raw);}catch{return json({error:'Хүсэлт буруу байна.'},400);}
  const audit=action=>env.DB.prepare('INSERT INTO admin_audit (actor_id,action,settings_revision,created_at) VALUES (?,?,0,?)').bind(identity.userId,action.slice(0,191),new Date().toISOString()).run();
- const target=async id=>typeof id==='string'&&id.length<=191?one("SELECT id,email,name FROM auth_users WHERE id=? AND role='admin'",id):null;
+ const target=async id=>typeof id==='string'&&id.length<=191?one("SELECT id,email,name,role FROM auth_users WHERE id=? AND role IN ('admin','editor')",id):null;
 
  if(request.method==='POST'){
   const name=typeof input.name==='string'?input.name.trim():'',email=typeof input.email==='string'?input.email.trim().toLowerCase():'';
   if(!name||name.length>100)return json({error:'Нэрээ оруулна уу (100 хүртэл тэмдэгт).'},400);
   if(!EMAIL.test(email)||email.length>191)return json({error:'Нэвтрэх и-мэйл хаяг буруу байна.'},400);
   if(!validPassword(input.password))return json({error:'Нууц үг 12–128 тэмдэгттэй байна.'},400);
+  const role=input.role===undefined?'admin':input.role;if(!['admin','editor'].includes(role))return json({error:'Эрхийн төрөл буруу байна.'},400);
   if(await one('SELECT id FROM auth_users WHERE email=?',email))return json({error:'Энэ и-мэйлээр бүртгэл аль хэдийн байна. Өөр и-мэйл сонгоно уу.'},409);
-  const admin={id:crypto.randomUUID(),email,name,createdAt:Date.now(),primary:false};
-  try{await env.DB.prepare("INSERT INTO auth_users (id,email,name,password_hash,role,created_at) VALUES (?,?,?,?,'admin',?)").bind(admin.id,email,name,await hashPassword(input.password),admin.createdAt).run();}
+  const admin={id:crypto.randomUUID(),email,name,role,createdAt:Date.now(),primary:false};
+  try{await env.DB.prepare("INSERT INTO auth_users (id,email,name,password_hash,role,created_at) VALUES (?,?,?,?,?,?)").bind(admin.id,email,name,await hashPassword(input.password),role,admin.createdAt).run();}
   catch(error){if(error?.code==='ER_DUP_ENTRY'||/UNIQUE/i.test(error?.message||''))return json({error:'Энэ и-мэйлээр бүртгэл аль хэдийн байна. Өөр и-мэйл сонгоно уу.'},409);throw error;}
-  await audit('admin.create:'+email);
+  await audit(role+'.create:'+email);
   return json({admin},201);
  }
  if(request.method==='PUT'){
@@ -51,7 +52,7 @@ export async function handleAdmins(request,env,identity,sameOrigin){
   await env.DB.batch([
    env.DB.prepare('DELETE FROM auth_sessions WHERE user_id=?').bind(admin.id),
    env.DB.prepare('DELETE FROM auth_identities WHERE user_id=?').bind(admin.id),
-   env.DB.prepare("DELETE FROM auth_users WHERE id=? AND role='admin'").bind(admin.id),
+   env.DB.prepare("DELETE FROM auth_users WHERE id=? AND role IN ('admin','editor')").bind(admin.id),
   ]);
   await audit('admin.remove:'+admin.email);
   return json({ok:true});

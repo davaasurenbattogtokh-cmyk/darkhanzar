@@ -2,12 +2,13 @@ import {handleAdminAPI} from '../admin-api.mjs';
 import {handleMarketAPI} from '../market-api.mjs';
 import {handlePromotionsAPI} from '../promotions-api.mjs';
 import {handleSourceAPI} from '../source-api.mjs';
+import {handleNewsAPI} from '../news-api.mjs';
 import {handleAuth,authenticatedUser,trustedHeaders} from './auth.mjs';
 export async function handleApplication(request,env,pool,ip){
  const auth=await handleAuth(request,pool,env,ip);if(auth)return auth;
  const url=new URL(request.url);if(!url.pathname.startsWith('/api/'))return null;
  const user=await authenticatedUser(request,pool);
  const internal=new Request(request,{headers:trustedHeaders(request,user)});
- for(const handler of [handleMarketAPI,handlePromotionsAPI,handleSourceAPI,handleAdminAPI]){const response=await handler(internal,env);if(response)return response;}
+ for(const handler of [handleMarketAPI,handlePromotionsAPI,handleSourceAPI,handleNewsAPI,handleAdminAPI]){const response=await handler(internal,env);if(response)return response;}
  return Response.json({error:'Олдсонгүй.'},{status:404});
 }

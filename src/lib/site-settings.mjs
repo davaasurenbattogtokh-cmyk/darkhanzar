@@ -2,11 +2,13 @@ const homeBanner={enabled:true, title:'Ойрхоноос хай. Амархан
 export const bannerSlots=[
  {id:'homeTop',label:'Нүүр хуудасны дээд баннер',description:'Нүүр хуудсанд, хайлтын хэсгийн дээр.',width:900,height:90,mobileWidth:300,mobileHeight:150},
  {id:'categoryTop',label:'Ангиллын баннер',description:'Сонгосон ангиллын зарын жагсаалтын дээр.',width:300,height:150,mobileWidth:300,mobileHeight:150},
+ {id:'newsTop',label:'Мэдээ · дээд баннер',description:'Бизнес мэдээний нүүр болон ангиллын хуудасны дээд хэсэгт.',width:900,height:90,mobileWidth:300,mobileHeight:150},
+ {id:'newsArticle',label:'Мэдээ · нийтлэл доторх баннер',description:'Нийтлэлийн бичвэрийн доор, холбоотой мэдээний өмнө.',width:728,height:90,mobileWidth:300,mobileHeight:250},
  {id:'inlineCard',label:'15 зар тутмын баннер',description:'15, 30, 45… зарын дараа нэг карт. 3 хүртэл зураг 5 секунд тутам ээлжилнэ.',width:600,height:450,mobileWidth:600,mobileHeight:450},
 ];
 export const defaultSettings = {
   banner: homeBanner,
-  bannerPlacements:{homeTop:homeBanner,categoryTop:{enabled:true,title:'Зараа ойрхоноос хүргэе.',subtitle:'Таны хэрэглэхгүй зүйл хэн нэгэнд хэрэгтэй.',desktopImage:'',mobileImage:'',buttonText:'Зар нэмэх',href:'#post'},inlineCard:{enabled:true,title:'Таны зар энд байж болно.',subtitle:'Дархан-Уул · Сүхбаатар хот · Хөтөл',desktopImage:'',mobileImage:'',buttonText:'Зар нэмэх',href:'#post',slides:[]}},
+  bannerPlacements:{homeTop:homeBanner,categoryTop:{enabled:true,title:'Зараа ойрхоноос хүргэе.',subtitle:'Таны хэрэглэхгүй зүйл хэн нэгэнд хэрэгтэй.',desktopImage:'',mobileImage:'',buttonText:'Зар нэмэх',href:'#post'},newsTop:{enabled:false,title:'Таны сурталчилгаа энд',subtitle:'Darkhanzar бизнес мэдээ',desktopImage:'',mobileImage:'',buttonText:'',href:'/'},newsArticle:{enabled:false,title:'Таны сурталчилгаа энд',subtitle:'Darkhanzar бизнес мэдээ',desktopImage:'',mobileImage:'',buttonText:'',href:'/'},inlineCard:{enabled:true,title:'Таны зар энд байж болно.',subtitle:'Дархан-Уул · Сүхбаатар хот · Хөтөл',desktopImage:'',mobileImage:'',buttonText:'Зар нэмэх',href:'#post',slides:[]}},
   promotionPlans: [
     {id:'special-1',label:'Онцгой · 1 хоног',days:1,price:0,enabled:false,categoryPrices:{}},
     {id:'special-7',label:'Онцгой · 7 хоног',days:7,price:0,enabled:false,categoryPrices:{}},
@@ -15,7 +17,7 @@ export const defaultSettings = {
 };
 export function normalizeSiteSettings(input){
  const homeTop=input?.bannerPlacements?.homeTop||input?.banner||defaultSettings.banner;
- return {...input,banner:homeTop,bannerPlacements:{homeTop,categoryTop:input?.bannerPlacements?.categoryTop||defaultSettings.bannerPlacements.categoryTop,inlineCard:input?.bannerPlacements?.inlineCard||defaultSettings.bannerPlacements.inlineCard},promotionPlans:input?.promotionPlans||defaultSettings.promotionPlans};
+ return {...input,banner:homeTop,bannerPlacements:{homeTop,categoryTop:input?.bannerPlacements?.categoryTop||defaultSettings.bannerPlacements.categoryTop,newsTop:input?.bannerPlacements?.newsTop||defaultSettings.bannerPlacements.newsTop,newsArticle:input?.bannerPlacements?.newsArticle||defaultSettings.bannerPlacements.newsArticle,inlineCard:input?.bannerPlacements?.inlineCard||defaultSettings.bannerPlacements.inlineCard},promotionPlans:input?.promotionPlans||defaultSettings.promotionPlans};
 }
 function safeMedia(v){return typeof v==='string'&&(v===''||/^\/api\/media\/[a-f0-9-]+\.(jpg|png|webp|gif)$/.test(v));}
 function cleanHref(href){

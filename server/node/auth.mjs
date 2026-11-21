@@ -27,7 +27,8 @@ export async function authenticatedUser(request,pool){
 }
 export function trustedHeaders(request,user){
  const headers=new Headers(request.headers);for(const key of [...headers.keys()])if(key.startsWith('oai-'))headers.delete(key);
- if(user){headers.set('oai-authenticated-user-id',user.id);headers.set('oai-authenticated-user-full-name',encodeURIComponent(user.name));headers.set('oai-authenticated-user-full-name-encoding','percent-encoded-utf-8');if(user.role==='admin'){headers.set('oai-authenticated-user-email',user.email);headers.set('oai-authenticated-user-role','admin');}}
+ if(user){headers.set('oai-authenticated-user-id',user.id);headers.set('oai-authenticated-user-full-name',encodeURIComponent(user.name));headers.set('oai-authenticated-user-full-name-encoding','percent-encoded-utf-8');if(user.role==='admin'){headers.set('oai-authenticated-user-email',user.email);headers.set('oai-authenticated-user-role','admin');}
+  else if(user.role==='editor')headers.set('oai-authenticated-user-role','editor');}
  return headers;
 }
 function page(kind,next,error='',google=false,facebook=false){

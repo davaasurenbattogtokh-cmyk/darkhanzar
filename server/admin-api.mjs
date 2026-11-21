@@ -14,6 +14,22 @@ export function adminIdentity(request,env){
 export function validMutationOrigin(request){
   return request.headers.get('Origin')===new URL(request.url).origin&&request.headers.get('Sec-Fetch-Site')!=='cross-site';
 }
+// Validates an uploaded image by its magic bytes and stores it; shared by banners and news.
+export async function storeImage(request,env){
+ if(Number(request.headers.get('Content-Length'))>6*1024*1024)return json({error:'Зураг 5MB-аас бага байна.'},413);
+ const form=await request.formData();const file=form.get('file');
+ if(!file||typeof file==='string'||file.size>5*1024*1024||file.size<12)return json({error:'JPG, PNG, GIF, WEBP зураг 5MB-аас бага байна.'},400);
+ const bytes=new Uint8Array(await file.arrayBuffer());
+ let ext='',type='';
+ if(bytes[0]===0xff&&bytes[1]===0xd8&&bytes[2]===0xff){ext='jpg';type='image/jpeg';}
+ else if([137,80,78,71,13,10,26,10].every((x,i)=>bytes[i]===x)){ext='png';type='image/png';}
+ else if(String.fromCharCode(...bytes.slice(0,4))==='RIFF'&&String.fromCharCode(...bytes.slice(8,12))==='WEBP'){ext='webp';type='image/webp';}
+ else if(['GIF87a','GIF89a'].includes(String.fromCharCode(...bytes.slice(0,6)))){ext='gif';type='image/gif';}
+ else return json({error:'Зургийн файл танигдсангүй. JPG, PNG, GIF, WEBP ашиглана уу.'},400);
+ const key=`${crypto.randomUUID()}.${ext}`;
+ await env.BUCKET.put(key,bytes,{httpMetadata:{contentType:type}});
+ return json({url:`/api/media/${key}`},201);
+}
 async function settingsRecord(env){
   const row=await env.DB.prepare('SELECT value_json, revision FROM site_settings WHERE id = 1').first();
   return row?{settings:normalizeSiteSettings(JSON.parse(row.value_json)),revision:row.revision}:{settings:defaultSettings,revision:0};
@@ -31,7 +47,12 @@ export async function handleAdminAPI(request,env){
    return new Response(object.body,{headers});
   }
   const identity=adminIdentity(request,env);
-  if(path==='/api/admin/session'&&request.method==='GET')return json({authenticated:identity.authenticated,authorized:identity.authorized,primary:identity.primary,email:identity.authorized?identity.email:undefined});
+  if(path==='/api/admin/session'&&request.method==='GET'){
+   const role=request.headers.get('oai-authenticated-user-role');
+   const editor=identity.authenticated&&!identity.authorized&&role==='editor';
+   let name=request.headers.get('oai-authenticated-user-full-name')||'';try{name=decodeURIComponent(name);}catch{name='';}
+   return json({authenticated:identity.authenticated,authorized:identity.authorized,primary:identity.primary,editor,name:(identity.authorized||editor)?name.slice(0,100):undefined,email:identity.authorized?identity.email:undefined});
+  }
   if(!path.startsWith('/api/admin/'))return json({error:'Олдсонгүй.'},404);
   if(!identity.authenticated)return json({error:'Админы эрхээр нэвтэрнэ үү.'},401);
   if(!identity.authorized)return json({error:'Танд админы эрх байхгүй байна.'},403);
@@ -54,21 +75,7 @@ export async function handleAdminAPI(request,env){
    if(!results[0].results?.length)return json({error:'Тохиргоог өөр газраас шинэчилсэн байна. Шинэчилж аваад дахин хадгална уу.'},409);
    return json({settings:value,revision:next});
   }
-  if(path==='/api/admin/upload'&&request.method==='POST'){
-   if(Number(request.headers.get('Content-Length'))>6*1024*1024)return json({error:'Зураг 5MB-аас бага байна.'},413);
-   const form=await request.formData();const file=form.get('file');
-   if(!file||typeof file==='string'||file.size>5*1024*1024||file.size<12)return json({error:'JPG, PNG, GIF, WEBP зураг 5MB-аас бага байна.'},400);
-   const bytes=new Uint8Array(await file.arrayBuffer());
-   let ext='',type='';
-   if(bytes[0]===0xff&&bytes[1]===0xd8&&bytes[2]===0xff){ext='jpg';type='image/jpeg';}
-   else if([137,80,78,71,13,10,26,10].every((x,i)=>bytes[i]===x)){ext='png';type='image/png';}
-   else if(String.fromCharCode(...bytes.slice(0,4))==='RIFF'&&String.fromCharCode(...bytes.slice(8,12))==='WEBP'){ext='webp';type='image/webp';}
-   else if(['GIF87a','GIF89a'].includes(String.fromCharCode(...bytes.slice(0,6)))){ext='gif';type='image/gif';}
-   else return json({error:'Зургийн файл танигдсангүй. JPG, PNG, GIF, WEBP ашиглана уу.'},400);
-   const key=`${crypto.randomUUID()}.${ext}`;
-   await env.BUCKET.put(key,bytes,{httpMetadata:{contentType:type}});
-   return json({url:`/api/media/${key}`},201);
-  }
+  if(path==='/api/admin/upload'&&request.method==='POST')return storeImage(request,env);
   return json({error:'Хүсэлтийн арга дэмжигдэхгүй байна.'},405);
  }catch(error){console.error('Admin API failed',path,error?.message);return json({error:'Сервертэй холбогдож чадсангүй. Дахин оролдоно уу.'},500);}
 }

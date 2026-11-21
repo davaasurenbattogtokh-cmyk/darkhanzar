@@ -15,6 +15,8 @@ if(!dev&&(!process.env.APP_ORIGIN||!origin.startsWith('https://')))throw Error('
 const port=Number(process.env.PORT||3000),pool=createPool(process.env);
 const env={...process.env,DB:new MySQLDatabase(pool),BUCKET:new MySQLBucket(pool)};
 await migrate(pool,env);
+// Server-rendered pages (e.g. /news) run in this same process and read data through this handle.
+globalThis.__darkhanzarEnv=env;
 const app=next({dev,hostname:'0.0.0.0',port}),handler=app.getRequestHandler();await app.prepare();
 const router=express();router.disable('x-powered-by');
 router.use(async(req,res)=>{

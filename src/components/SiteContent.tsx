@@ -7,8 +7,8 @@ export type PromotionPlan={id:string;label:string;days:number;price:number;enabl
 export type BannerConfig={enabled:boolean;title:string;subtitle:string;desktopImage:string;mobileImage:string;buttonText:string;href:string};
 export type BannerSlide={id:string;image:string;title:string;href:string};
 export type InlineBannerConfig=BannerConfig&{slides:BannerSlide[]};
-export type BannerPlacement='homeTop'|'categoryTop'|'inlineCard';
-export type SiteSettings={banner:BannerConfig;bannerPlacements:Record<'homeTop'|'categoryTop',BannerConfig>&{inlineCard:InlineBannerConfig};promotionPlans:PromotionPlan[]};
+export type BannerPlacement='homeTop'|'categoryTop'|'newsTop'|'newsArticle'|'inlineCard';
+export type SiteSettings={banner:BannerConfig;bannerPlacements:Record<'homeTop'|'categoryTop'|'newsTop'|'newsArticle',BannerConfig>&{inlineCard:InlineBannerConfig};promotionPlans:PromotionPlan[]};
 export function useSiteSettings(){
  const [settings,setSettings]=useState<SiteSettings>(defaultSettings);
  useEffect(()=>{const controller=new AbortController();const load=()=>fetch('/api/settings',{signal:controller.signal,cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json() as Promise<{settings:SiteSettings}>;}).then(d=>setSettings(normalizeSiteSettings(d.settings))).catch(()=>{});load();window.addEventListener('focus',load);return()=>{controller.abort();window.removeEventListener('focus',load);};},[]);
