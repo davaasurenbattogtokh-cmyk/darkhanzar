@@ -33,7 +33,7 @@ export default function Privacy(){
    <ul>
     <li><strong>Нэвтрэлтийн cookie</strong> (<code>__Host-dz_session</code>) — таныг нэвтэрсэн хэвээр байлгана, 7 хоногийн хугацаатай, JavaScript-ээс хандах боломжгүй (HttpOnly).</li>
     <li><strong>Google нэвтрэлтийн түр cookie</strong> (<code>__Host-dz_oauth</code>) — Google-ээр нэвтрэх үед аюулгүй байдлыг шалгахад 10 минут хэрэглэгдэнэ.</li>
-    <li><strong>Хөтчийн хадгалалт (localStorage)</strong> — хадгалсан зар, сонгосон байршил, туршилтын зар зэрэг тохиргоо зөвхөн таны төхөөрөмж дээр хадгалагдана.</li>
+    <li><strong>Хөтчийн хадгалалт (localStorage)</strong> — хадгалсан зар, сонгосон байршил зэрэг тохиргоо зөвхөн таны төхөөрөмж дээр хадгалагдана.</li>
    </ul>
    <p>Бид гуравдагч талын зар сурталчилгааны болон хяналтын (tracking) cookie ашигладаггүй.</p>
   </Section>
