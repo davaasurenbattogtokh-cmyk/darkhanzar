@@ -12,7 +12,7 @@ type Props={params:Promise<{slug:string}>};
 export async function generateMetadata({params}:Props):Promise<Metadata>{
  const item=await news.bySlug((await params).slug);
  if(!item)return {title:'Мэдээ олдсонгүй',robots:{index:false}};
- const image=item.cover?`${siteOrigin()}${item.cover}`:`${siteOrigin()}/brand/logo-source.png`;
+ const image=item.cover?`${siteOrigin()}${item.cover}`:`${siteOrigin()}/news-og.png`;
  return {
   title:item.title,description:item.summary,alternates:{canonical:`/news/${item.slug}`},
   openGraph:{type:'article',title:item.title,description:item.summary,url:`/news/${item.slug}`,images:[{url:image}],publishedTime:new Date(item.publishedAt).toISOString(),modifiedTime:new Date(item.updatedAt).toISOString(),section:newsCategoryLabel(item.category),authors:[item.author]},

@@ -8,7 +8,7 @@ export const metadata:Metadata={
  title:{default:'Бизнес мэдээ · Darkhanzar',template:'%s · Darkhanzar Бизнес'},
  description:'Дархан-Уул, Сүхбаатар, Хөтөл болон Монголын бизнес, эдийн засаг, санхүүгийн мэдээ.',
  robots:{index:true,follow:true},
- openGraph:{siteName:'Darkhanzar Бизнес',locale:'mn_MN',type:'website'},
+ openGraph:{siteName:'Darkhanzar Бизнес',locale:'mn_MN',type:'website',images:[{url:'/news-og.png',width:1200,height:630}]},
 };
 
 export default function NewsLayout({children}:{children:React.ReactNode}){
