@@ -49,6 +49,14 @@ export async function featuredArticle(env){
  return view(await one(env,`SELECT ${LIST_COLUMNS} FROM news_articles WHERE status='published' AND featured=1 ORDER BY published_at DESC LIMIT 1`))
   ||view(await one(env,`SELECT ${LIST_COLUMNS} FROM news_articles WHERE status='published' ORDER BY published_at DESC LIMIT 1`));
 }
+// Featured articles first, topped up with the latest ones (used by the marketplace sidebar).
+export async function highlights(env,limit=5){
+ const n=int(limit,1,10,5);
+ const featured=(await rows(env,`SELECT ${LIST_COLUMNS} FROM news_articles WHERE status='published' AND featured=1 ORDER BY published_at DESC LIMIT ${n}`)).map(view);
+ if(featured.length>=n)return featured;
+ const rest=await listPublished(env,{limit:n-featured.length,excludeIds:featured.map(a=>a.id)});
+ return [...featured,...rest.items];
+}
 export async function mostRead(env,{days=30,limit=5}={}){
  const since=Date.now()-int(days,1,3650,30)*86400000;
  return (await rows(env,`SELECT ${LIST_COLUMNS} FROM news_articles WHERE status='published' AND published_at>=? ORDER BY views DESC, published_at DESC LIMIT ${int(limit,1,20,5)}`,since)).map(view);

@@ -1,5 +1,5 @@
 import {adminIdentity,validMutationOrigin,storeImage} from './admin-api.mjs';
-import {NewsError,listPublished,listAll,createArticle,updateArticle,deleteArticle} from './news-store.mjs';
+import {NewsError,listPublished,highlights,listAll,createArticle,updateArticle,deleteArticle} from './news-store.mjs';
 
 // Public news feed plus the newsroom API used by admins and editors.
 const json=(body,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
@@ -15,6 +15,10 @@ export function newsroomIdentity(request,env){
 
 export async function handleNewsAPI(request,env){
  const url=new URL(request.url),path=url.pathname;
+ if(path==='/api/news'&&request.method==='GET'&&url.searchParams.has('highlights')){
+  try{return Response.json({items:await highlights(env,url.searchParams.get('highlights'))},{headers:{'Cache-Control':'public, max-age=120','X-Content-Type-Options':'nosniff'}});}
+  catch{return json({error:'Мэдээ ачаалж чадсангүй.'},500);}
+ }
  if(path==='/api/news'&&request.method==='GET'){
   const page=Math.max(1,Number.parseInt(url.searchParams.get('page')||'1',10)||1);
   try{return json(await listPublished(env,{category:url.searchParams.get('category')||'',limit:12,offset:(page-1)*12}));}

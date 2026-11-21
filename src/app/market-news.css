@@ -1,0 +1,27 @@
+/* Business-news highlights on the marketplace: right column on wide screens, inline block otherwise. */
+.page-shell.with-news-rail{grid-template-columns:230px minmax(0,1fr) 270px}
+.market-news-rail{font-family:'Nunito Sans',sans-serif}
+.market-news-side{padding-top:29px;align-self:start;position:sticky;top:88px;max-height:calc(100dvh - 88px);overflow-y:auto;scrollbar-width:thin}
+.market-news-inline{display:none;margin:28px 0 8px;padding:18px;border:1px solid var(--border);border-radius:var(--radius);background:#fff}
+.market-news-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:10px;margin-bottom:4px;border-bottom:1px solid var(--border);position:relative}
+.market-news-head:after{content:'';position:absolute;left:0;bottom:-1px;width:44px;height:3px;background:var(--orange)}
+.market-news-head span{font:800 12px/1 Nunito,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--navy)}
+.market-news-head a{font-size:13px;font-weight:800;color:var(--orange-ink)}
+.market-news-rail ol{list-style:none;margin:0;padding:0}
+.market-news-rail li a{display:grid;grid-template-columns:72px minmax(0,1fr);gap:10px;align-items:start;padding:11px 0;border-bottom:1px solid var(--border);color:var(--navy)}
+.market-news-rail li img,.market-news-noimg{width:72px;height:52px;border-radius:8px;object-fit:cover;background:var(--navy)}
+.market-news-noimg{display:grid;place-items:center;font:800 10px/1 Nunito,sans-serif;color:#fff}
+.market-news-noimg b{color:var(--orange)}
+.market-news-rail li span:not(.market-news-noimg){font:700 13px/1.35 Nunito,sans-serif;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.market-news-rail li a:hover span{color:var(--orange-ink)}
+.market-news-more{display:block;margin-top:12px;text-align:center;padding:9px;border:1px solid var(--border);border-radius:999px;font-weight:800;font-size:13px;color:var(--navy)}
+.market-news-more:hover{border-color:var(--navy)}
+@media(min-width:1550px){.page-shell.with-news-rail{grid-template-columns:240px minmax(0,1fr) 290px}}
+@media(max-width:1250px){
+ .page-shell.with-news-rail{grid-template-columns:205px minmax(0,1fr)}
+ .market-news-side{display:none}
+ .market-news-inline{display:block}
+ .market-news-inline ol{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:0 20px}
+}
+@media(max-width:1050px){.page-shell.with-news-rail{grid-template-columns:183px minmax(0,1fr)}}
+@media(max-width:800px){.page-shell.with-news-rail{display:block}}

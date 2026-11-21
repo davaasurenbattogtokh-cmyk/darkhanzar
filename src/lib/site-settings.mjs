@@ -9,6 +9,7 @@ export const bannerSlots=[
 export const defaultSettings = {
   banner: homeBanner,
   bannerPlacements:{homeTop:homeBanner,categoryTop:{enabled:true,title:'Зараа ойрхоноос хүргэе.',subtitle:'Таны хэрэглэхгүй зүйл хэн нэгэнд хэрэгтэй.',desktopImage:'',mobileImage:'',buttonText:'Зар нэмэх',href:'#post'},newsTop:{enabled:false,title:'Таны сурталчилгаа энд',subtitle:'Darkhanzar бизнес мэдээ',desktopImage:'',mobileImage:'',buttonText:'',href:'/'},newsArticle:{enabled:false,title:'Таны сурталчилгаа энд',subtitle:'Darkhanzar бизнес мэдээ',desktopImage:'',mobileImage:'',buttonText:'',href:'/'},inlineCard:{enabled:true,title:'Таны зар энд байж болно.',subtitle:'Дархан-Уул · Сүхбаатар хот · Хөтөл',desktopImage:'',mobileImage:'',buttonText:'Зар нэмэх',href:'#post',slides:[]}},
+  newsSidebarListings: 5,
   promotionPlans: [
     {id:'special-1',label:'Онцгой · 1 хоног',days:1,price:0,enabled:false,categoryPrices:{}},
     {id:'special-7',label:'Онцгой · 7 хоног',days:7,price:0,enabled:false,categoryPrices:{}},
@@ -17,7 +18,7 @@ export const defaultSettings = {
 };
 export function normalizeSiteSettings(input){
  const homeTop=input?.bannerPlacements?.homeTop||input?.banner||defaultSettings.banner;
- return {...input,banner:homeTop,bannerPlacements:{homeTop,categoryTop:input?.bannerPlacements?.categoryTop||defaultSettings.bannerPlacements.categoryTop,newsTop:input?.bannerPlacements?.newsTop||defaultSettings.bannerPlacements.newsTop,newsArticle:input?.bannerPlacements?.newsArticle||defaultSettings.bannerPlacements.newsArticle,inlineCard:input?.bannerPlacements?.inlineCard||defaultSettings.bannerPlacements.inlineCard},promotionPlans:input?.promotionPlans||defaultSettings.promotionPlans};
+ return {...input,banner:homeTop,bannerPlacements:{homeTop,categoryTop:input?.bannerPlacements?.categoryTop||defaultSettings.bannerPlacements.categoryTop,newsTop:input?.bannerPlacements?.newsTop||defaultSettings.bannerPlacements.newsTop,newsArticle:input?.bannerPlacements?.newsArticle||defaultSettings.bannerPlacements.newsArticle,inlineCard:input?.bannerPlacements?.inlineCard||defaultSettings.bannerPlacements.inlineCard},promotionPlans:input?.promotionPlans||defaultSettings.promotionPlans,newsSidebarListings:Number.isInteger(input?.newsSidebarListings)?input.newsSidebarListings:defaultSettings.newsSidebarListings};
 }
 function safeMedia(v){return typeof v==='string'&&(v===''||/^\/api\/media\/[a-f0-9-]+\.(jpg|png|webp|gif)$/.test(v));}
 function cleanHref(href){
@@ -54,6 +55,8 @@ export function cleanSettings(input) {
     for(const [k,v] of Object.entries(p.categoryPrices||{})){if(!['property','cars','fashion','jobs','kids','computers','phones','electronics','home','equipment','hobby','health','animals','services','free'].includes(k)||!Number.isInteger(v)||v<0||v>100000000)throw new Error('Ангиллын үнэ буруу байна.');categoryPrices[k]=v;}
     return {id:p.id,label:p.label.trim(),days:p.days,price:p.price,enabled:p.enabled,categoryPrices};
   });
-  return {banner:bannerPlacements.homeTop,bannerPlacements,promotionPlans:plans};
+  const newsSidebarListings=normalized.newsSidebarListings;
+  if(!Number.isInteger(newsSidebarListings)||newsSidebarListings<0||newsSidebarListings>20)throw new Error('Мэдээний хажуугийн зарын тоо 0–20 байна.');
+  return {banner:bannerPlacements.homeTop,bannerPlacements,promotionPlans:plans,newsSidebarListings};
 }
 export function promotionPrice(plan,category){return plan.categoryPrices?.[category]??plan.price;}
