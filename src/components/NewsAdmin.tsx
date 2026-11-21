@@ -2,12 +2,14 @@
 import {useEffect,useRef,useState} from 'react';
 import {Icon} from './Brand';
 import NewsBody from './news/NewsBody';
+import NewsVideo from './news/NewsVideo';
+import {normalizeVideo,youtubeWatch,UPLOADED_VIDEO} from '@/lib/news-video.mjs';
 import {newsCategories,newsCategoryLabel} from '@/lib/news-categories.mjs';
 import '../app/news/news.css';
 
-type Article={id:string;slug:string;title:string;summary:string;body:string;category:string;cover:string;status:'draft'|'published';featured:boolean;author:string;views:number;updatedAt:number;publishedAt:number};
-type Draft={id?:string;title:string;summary:string;body:string;category:string;cover:string;featured:boolean};
-const empty=():Draft=>({title:'',summary:'',body:'',category:newsCategories[0].id,cover:'',featured:false});
+type Article={id:string;slug:string;title:string;summary:string;body:string;category:string;cover:string;video:string;status:'draft'|'published';featured:boolean;author:string;views:number;updatedAt:number;publishedAt:number};
+type Draft={id?:string;title:string;summary:string;body:string;category:string;cover:string;video:string;featured:boolean};
+const empty=():Draft=>({title:'',summary:'',body:'',category:newsCategories[0].id,cover:'',video:'',featured:false});
 const date=(ms:number)=>ms?new Date(ms).toLocaleString('mn-MN',{timeZone:'Asia/Ulaanbaatar',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
 
 async function api(method:string,body?:object){
@@ -23,14 +25,30 @@ async function uploadImage(file:File){
  if(!r.ok||!d.url)throw Error(d.error||'Зураг байршуулж чадсангүй.');
  return d.url;
 }
+const VIDEO_TYPES=['video/mp4','video/webm','video/quicktime'];
+const MAX_VIDEO=300*1024*1024;
+// Raw-body upload with progress (fetch has no upload progress).
+function uploadVideo(file:File,onProgress:(pct:number)=>void){
+ return new Promise<string>((resolve,reject)=>{
+  if(!VIDEO_TYPES.includes(file.type))return reject(Error('MP4, MOV эсвэл WEBM видео сонгоно уу.'));
+  if(file.size>MAX_VIDEO)return reject(Error('Видео 300MB-аас бага байна.'));
+  const x=new XMLHttpRequest();x.open('POST','/api/admin/news/video');x.setRequestHeader('Content-Type',file.type);
+  x.upload.onprogress=e=>{if(e.lengthComputable)onProgress(Math.round(e.loaded/e.total*100));};
+  x.onload=()=>{let d:{url?:string;error?:string}={};try{d=JSON.parse(x.responseText);}catch{}
+   if(x.status>=200&&x.status<300&&d.url)resolve(d.url);else reject(Error(d.error||(x.status===413?'Видео хэт том байна.':'Видео байршуулж чадсангүй.')));};
+  x.onerror=()=>reject(Error('Сүлжээний алдаа. Дахин оролдоно уу.'));
+  x.send(file);
+ });
+}
+const videoInput=(v:string)=>youtubeWatch(v)||v;
 
 export default function NewsAdmin(){
  const [items,setItems]=useState<Article[]>([]),[loading,setLoading]=useState(true),[filter,setFilter]=useState<'all'|'published'|'draft'>('all');
- const [draft,setDraft]=useState<Draft|null>(null),[preview,setPreview]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
+ const [progress,setProgress]=useState<number|null>(null),[draft,setDraft]=useState<Draft|null>(null),[preview,setPreview]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
  const bodyRef=useRef<HTMLTextAreaElement>(null);
  async function load(){setLoading(true);try{setItems((await api('GET')).items||[]);}catch(e){setError((e as Error).message);}finally{setLoading(false);}}
  useEffect(()=>{load();},[]);
- const edit=(a?:Article)=>{setError('');setNotice('');setPreview(false);setDraft(a?{id:a.id,title:a.title,summary:a.summary,body:a.body,category:a.category,cover:a.cover,featured:a.featured}:empty());window.scrollTo({top:0});};
+ const edit=(a?:Article)=>{setError('');setNotice('');setPreview(false);setDraft(a?{id:a.id,title:a.title,summary:a.summary,body:a.body,category:a.category,cover:a.cover,video:videoInput(a.video||''),featured:a.featured}:empty());window.scrollTo({top:0});};
  const set=<K extends keyof Draft>(k:K,v:Draft[K])=>setDraft(d=>d&&{...d,[k]:v});
  function wrap(before:string,after=before,placeholder='текст'){
   const el=bodyRef.current;if(!el||!draft)return;
@@ -51,8 +69,10 @@ export default function NewsAdmin(){
   catch(e){setError((e as Error).message);}finally{setBusy(false);}
  }
  async function setCover(file?:File){if(!file)return;setBusy(true);setError('');try{set('cover',await uploadImage(file));}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
+ async function setVideoFile(file?:File){if(!file)return;setBusy(true);setError('');setProgress(0);try{set('video',await uploadVideo(file,setProgress));}catch(e){setError((e as Error).message);}finally{setBusy(false);setProgress(null);}}
  async function save(status:'draft'|'published'){
   if(!draft)return;setBusy(true);setError('');setNotice('');
+  if(draft.video.trim()&&normalizeVideo(draft.video)===null){setBusy(false);setError('YouTube холбоос буруу байна. Жишээ: https://www.youtube.com/watch?v=…');return;}
   try{const payload={...draft,status};const d=draft.id?await api('PUT',payload):await api('POST',payload);
    setDraft(null);await load();
    setNotice(status==='published'?`Мэдээ нийтлэгдлээ: darkhanzar.mn/news/${d.item!.slug}`:'Ноорог хадгалагдлаа.');}
@@ -73,11 +93,20 @@ export default function NewsAdmin(){
      {draft.cover?<img src={draft.cover} alt="" style={{width:'100%',maxWidth:360,borderRadius:10,display:'block',marginBottom:8}}/>:null}
      <div style={{display:'flex',gap:8,flexWrap:'wrap'}}><label className={`button button-outline ${busy?'disabled':''}`}><Icon name="upload"/>Зураг сонгох<input type="file" hidden accept="image/jpeg,image/png,image/webp,image/gif" disabled={busy} onChange={e=>{setCover(e.target.files?.[0]);e.target.value='';}}/></label>{draft.cover&&<button className="text-button" onClick={()=>set('cover','')}>Арилгах</button>}</div>
     </div>
+    <div style={{gridColumn:'1/-1'}}><b>Видео мэдээ</b><p className="admin-muted">YouTube холбоос оруулах, эсвэл видео файл (MP4, MOV, WEBM · 300MB хүртэл) байршуулна. Видеотой мэдээ «Видео мэдээ» хэсэг болон хоёр сайтын sidebar-т гарна.</p>
+     <div style={{display:'flex',gap:8,flexWrap:'wrap',alignItems:'center'}}>
+      {UPLOADED_VIDEO.test(draft.video)?<span className="admin-muted" style={{flex:'1 1 260px'}}>Байршуулсан видео файл</span>:<input style={{flex:'1 1 260px'}} value={draft.video} maxLength={300} onChange={e=>set('video',e.target.value)} placeholder="https://www.youtube.com/watch?v=…"/>}
+      <label className={`button button-outline ${busy?'disabled':''}`}><Icon name="upload"/>Видео файл сонгох<input type="file" hidden accept="video/mp4,video/webm,video/quicktime" disabled={busy} onChange={e=>{setVideoFile(e.target.files?.[0]);e.target.value='';}}/></label>
+      {draft.video&&<button className="text-button" disabled={busy} onClick={()=>set('video','')}>Видеог арилгах</button>}
+     </div>
+     {progress!==null&&<p className="admin-muted" role="status">Байршуулж байна… {progress}%<progress value={progress} max={100} style={{display:'block',width:'100%',maxWidth:420}}/></p>}
+     {(()=>{const v=normalizeVideo(draft.video);return v?<div style={{maxWidth:520}}><NewsVideo video={v} title={draft.title||'Видео'} poster={draft.cover}/></div>:null;})()}
+    </div>
    </div>
   </section>
   <section className="admin-card">
    <div className="admin-card-heading"><h2>Бичвэр</h2><div style={{display:'flex',gap:8}}><button className={`button ${preview?'button-outline':'button-navy'}`} onClick={()=>setPreview(false)}>Засах</button><button className={`button ${preview?'button-navy':'button-outline'}`} onClick={()=>setPreview(true)}>Урьдчилан харах</button></div></div>
-   {preview?<div className="news-site" style={{minHeight:0}}><article className="news-article"><h1>{draft.title||'Гарчиг'}</h1>{draft.summary&&<p className="news-lead-text">{draft.summary}</p>}{draft.cover&&<img className="news-article-cover" src={draft.cover} alt=""/>}<NewsBody body={draft.body}/></article></div>:<>
+   {preview?<div className="news-site" style={{minHeight:0}}><article className="news-article"><h1>{draft.title||'Гарчиг'}</h1>{draft.summary&&<p className="news-lead-text">{draft.summary}</p>}{normalizeVideo(draft.video)?<NewsVideo video={normalizeVideo(draft.video)!} title={draft.title} poster={draft.cover}/>:draft.cover&&<img className="news-article-cover" src={draft.cover} alt=""/>}<NewsBody body={draft.body}/></article></div>:<>
     <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:8}} role="toolbar" aria-label="Форматлах">
      <button className="button button-outline" onClick={()=>linePrefix('## ')}>Гарчиг</button>
      <button className="button button-outline" onClick={()=>linePrefix('### ')}>Дэд гарчиг</button>
@@ -110,7 +139,7 @@ export default function NewsAdmin(){
    {loading?<p className="admin-muted">Ачаалж байна…</p>:!shown.length?<div className="empty-state compact"><Icon name="images"/><h3>Мэдээ алга</h3><p>«Шинэ мэдээ» товчоор анхны мэдээгээ бичээрэй.</p></div>:
    <div className="management-list">{shown.map(a=><div className="management-row" key={a.id}>
     {a.cover?<img className="management-photo" src={a.cover} alt="" style={{objectFit:'cover'}}/>:<div className="management-photo" style={{display:'grid',placeItems:'center',background:'#f2f4f8'}}><Icon name="images"/></div>}
-    <div className="management-info"><span className={`status ${a.status==='published'?'status-published':'status-pending'}`}>{a.status==='published'?'Нийтлэгдсэн':'Ноорог'}{a.featured?' · Онцлох':''}</span><h3>{a.title}</h3><small>{newsCategoryLabel(a.category)} · {a.author} · {a.status==='published'?`нийтэлсэн ${date(a.publishedAt)}`:`зассан ${date(a.updatedAt)}`} · {a.views} уншсан</small></div>
+    <div className="management-info"><span className={`status ${a.status==='published'?'status-published':'status-pending'}`}>{a.status==='published'?'Нийтлэгдсэн':'Ноорог'}{a.featured?' · Онцлох':''}{a.video?' · ▶ Видео':''}</span><h3>{a.title}</h3><small>{newsCategoryLabel(a.category)} · {a.author} · {a.status==='published'?`нийтэлсэн ${date(a.publishedAt)}`:`зассан ${date(a.updatedAt)}`} · {a.views} уншсан</small></div>
     <div className="management-actions"><button className="button button-outline" disabled={busy} onClick={()=>edit(a)}><Icon name="edit"/>Засах</button>{a.status==='published'&&<a className="text-button" href={`/news/${a.slug}`} target="_blank" rel="noopener">Харах</a>}<button className="text-button" disabled={busy} onClick={()=>remove(a)}>Устгах</button></div>
    </div>)}</div>}
   </section>

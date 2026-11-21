@@ -8,7 +8,7 @@ import {handleNewsAPI} from '../server/news-api.mjs';
 const origin='https://darkhan.example';
 function fixture(){
  const db=new DatabaseSync(':memory:');
- db.exec(`CREATE TABLE news_articles (id TEXT PRIMARY KEY, slug TEXT NOT NULL UNIQUE, title TEXT NOT NULL, summary TEXT NOT NULL, body TEXT NOT NULL, category TEXT NOT NULL, cover TEXT NOT NULL DEFAULT '', status TEXT NOT NULL, featured INTEGER NOT NULL DEFAULT 0, author_id TEXT NOT NULL, author_name TEXT NOT NULL, views INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL, published_at INTEGER NOT NULL DEFAULT 0)`);
+ db.exec(`CREATE TABLE news_articles (id TEXT PRIMARY KEY, slug TEXT NOT NULL UNIQUE, title TEXT NOT NULL, summary TEXT NOT NULL, body TEXT NOT NULL, category TEXT NOT NULL, cover TEXT NOT NULL DEFAULT '', video TEXT NOT NULL DEFAULT '', status TEXT NOT NULL, featured INTEGER NOT NULL DEFAULT 0, author_id TEXT NOT NULL, author_name TEXT NOT NULL, views INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL, published_at INTEGER NOT NULL DEFAULT 0)`);
  const stmt=(sql,args=[])=>({sql,args,bind:(...a)=>stmt(sql,a),async all(){return {results:db.prepare(sql).all(...args)};},async first(){return db.prepare(sql).get(...args)||null;},async run(){db.prepare(sql).run(...args);return {};}});
  return {db,env:{ADMIN_EMAIL:'owner@example.test',DB:{prepare:sql=>stmt(sql)}}};
 }

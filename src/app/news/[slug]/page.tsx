@@ -3,6 +3,7 @@ import {notFound} from 'next/navigation';
 import {news,siteOrigin,formatDate} from '@/lib/news-server';
 import {newsCategoryLabel} from '@/lib/news-categories.mjs';
 import NewsBody from '@/components/news/NewsBody';
+import NewsVideo,{coverOf} from '@/components/news/NewsVideo';
 import {NewsCard} from '@/components/news/NewsCard';
 import {NewsBanner,NewsShare} from '@/components/news/NewsClient';
 
@@ -12,7 +13,8 @@ type Props={params:Promise<{slug:string}>};
 export async function generateMetadata({params}:Props):Promise<Metadata>{
  const item=await news.bySlug((await params).slug);
  if(!item)return {title:'Мэдээ олдсонгүй',robots:{index:false}};
- const image=item.cover?`${siteOrigin()}${item.cover}`:`${siteOrigin()}/news-og.png`;
+ const cover=coverOf(item);
+ const image=cover?(cover.startsWith('http')?cover:`${siteOrigin()}${cover}`):`${siteOrigin()}/news-og.png`;
  return {
   title:item.title,description:item.summary,alternates:{canonical:`/news/${item.slug}`},
   openGraph:{type:'article',title:item.title,description:item.summary,url:`/news/${item.slug}`,images:[{url:image}],publishedTime:new Date(item.publishedAt).toISOString(),modifiedTime:new Date(item.updatedAt).toISOString(),section:newsCategoryLabel(item.category),authors:[item.author]},
@@ -33,7 +35,7 @@ export default async function ArticlePage({params}:Props){
   {item.summary&&<p className="news-lead-text">{item.summary}</p>}
   <div className="news-meta"><span>{item.author}</span><span>{formatDate(item.publishedAt)}</span><span>{item.views+1} уншсан</span></div>
   <NewsShare url={url} title={item.title}/>
-  {item.cover&&<img className="news-article-cover" src={item.cover} alt=""/>}
+  {item.video?<NewsVideo video={item.video} title={item.title} poster={item.cover}/>:item.cover&&<img className="news-article-cover" src={item.cover} alt=""/>}
   <NewsBody body={item.body||''}/>
   <NewsShare url={url} title={item.title}/>
   <NewsBanner placement="newsArticle"/>

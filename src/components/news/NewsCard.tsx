@@ -1,10 +1,13 @@
 import {newsCategoryLabel} from '@/lib/news-categories.mjs';
 import {formatDate,type NewsItem,type ListingHighlight} from '@/lib/news-server';
+import {coverOf} from './NewsVideo';
 
 function Cover({item,className}:{item:NewsItem;className:string}){
- return item.cover
-  ?<img className={className} src={item.cover} alt="" loading="lazy"/>
+ const src=coverOf(item);
+ const image=src
+  ?<img className={className} src={src} alt="" loading="lazy"/>
   :<div className={`${className} news-cover-empty`} aria-hidden="true"><span>darkhan<b>zar</b></span></div>;
+ return item.video?<span className="news-has-video">{image}<i aria-label="Видео">▶</i></span>:image;
 }
 
 export function NewsHero({item}:{item:NewsItem}){
@@ -46,4 +49,13 @@ export function ListingRail({items}:{items:ListingHighlight[]}){
 export function MostRead({items}:{items:NewsItem[]}){
  if(!items.length)return null;
  return <aside className="news-most-read"><h3 className="news-section-title">Их уншилттай</h3><ol>{items.map(i=><li key={i.id}><a href={`/news/${i.slug}`}>{i.title}</a><small>{formatDate(i.publishedAt)}</small></li>)}</ol></aside>;
+}
+
+export function VideoRail({items}:{items:NewsItem[]}){
+ if(!items.length)return null;
+ return <section className="news-video-rail" aria-label="Видео мэдээ">
+  <h3 className="news-section-title">Видео мэдээ</h3>
+  {items.map(i=><a key={i.id} href={`/news/${i.slug}`} className="news-video-rail-item"><Cover item={i} className="news-video-rail-image"/><b>{i.title}</b></a>)}
+  <a className="news-rail-more" href="/news/video">Бүх видео →</a>
+ </section>;
 }

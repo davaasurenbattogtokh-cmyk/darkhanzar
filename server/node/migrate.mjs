@@ -7,6 +7,11 @@ export async function migrate(pool,env){
   const [locks]=await c.execute("SELECT GET_LOCK('darkhanzar-schema-v1',30) AS held");held=locks[0].held===1;if(!held)throw Error('Schema migration is busy');
   const ddl=await readFile(new URL('./schema.sql',import.meta.url),'utf8');
   for(const sql of ddl.split(';').map(s=>s.trim()).filter(Boolean))await c.query(sql);
+  // Columns added after a table first shipped (CREATE TABLE IF NOT EXISTS does not add them).
+  for(const [table,column,definition] of [['news_articles','video',"VARCHAR(120) NOT NULL DEFAULT '' AFTER cover"]]){
+   const [cols]=await c.execute('SELECT COUNT(*) AS n FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=? AND COLUMN_NAME=?',[table,column]);
+   if(!Number(cols[0].n))await c.query(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+  }
   let settings=structuredClone(defaultSettings);
   try{settings=cleanSettings(JSON.parse(await readFile(new URL('../../config/initial-settings.json',import.meta.url),'utf8')));}catch(error){if(error.code!=='ENOENT')throw error;}
   await c.execute('INSERT INTO site_settings (id,value_json,revision,updated_at,updated_by) VALUES (1,?,1,?,?) ON DUPLICATE KEY UPDATE id=id',[JSON.stringify(settings),new Date().toISOString(),'initial-setup']);

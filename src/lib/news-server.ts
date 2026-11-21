@@ -1,12 +1,12 @@
 // Server-only access to published news for the /news pages.
 // The custom server (server.js) shares its database handle via globalThis.__darkhanzarEnv.
-import {listPublished,featuredArticle,mostRead,publishedBySlug,countView,sitemapEntries} from '../../server/news-store.mjs';
+import {listPublished,listVideos,featuredArticle,mostRead,publishedBySlug,countView,sitemapEntries} from '../../server/news-store.mjs';
 import {listingHighlights} from '../../server/listing-highlights.mjs';
 import {normalizeSiteSettings} from './site-settings.mjs';
 
 export type ListingHighlight={id:string;title:string;price:number;priceLabel:string;place:string;image:string;featured:boolean;href:string;source:string};
 
-export type NewsItem={id:string;slug:string;title:string;summary:string;category:string;cover:string;status:string;featured:boolean;author:string;views:number;createdAt:number;updatedAt:number;publishedAt:number;body?:string};
+export type NewsItem={id:string;slug:string;title:string;summary:string;category:string;cover:string;video:string;status:string;featured:boolean;author:string;views:number;createdAt:number;updatedAt:number;publishedAt:number;body?:string};
 
 function env(){
  const shared=(globalThis as {__darkhanzarEnv?:unknown}).__darkhanzarEnv;
@@ -16,6 +16,7 @@ function env(){
 export const news={
  list:(o:{category?:string;limit?:number;offset?:number;excludeIds?:string[]}={})=>listPublished(env(),o) as Promise<{items:NewsItem[];total:number}>,
  featured:()=>featuredArticle(env()) as Promise<NewsItem|null>,
+ videos:(limit=3,offset=0)=>listVideos(env(),{limit,offset}) as Promise<{items:NewsItem[];total:number}>,
  mostRead:(limit=5)=>mostRead(env(),{limit}) as Promise<NewsItem[]>,
  bySlug:(slug:string)=>publishedBySlug(env(),slug) as Promise<NewsItem|null>,
  countView:(id:string)=>countView(env(),id) as Promise<void>,

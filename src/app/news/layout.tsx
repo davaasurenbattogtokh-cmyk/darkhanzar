@@ -18,7 +18,7 @@ export default function NewsLayout({children}:{children:React.ReactNode}){
     <a className="news-brand" href="/news" aria-label="Darkhanzar бизнес мэдээ"><Logo/><span>Бизнес</span></a>
     <a className="news-to-market" href="/">Зарын сайт →</a>
    </div>
-   <nav className="news-nav" aria-label="Мэдээний ангилал"><a href="/news">Нүүр</a>{newsCategories.map(c=><a key={c.id} href={`/news/c/${c.id}`}>{c.label}</a>)}</nav>
+   <nav className="news-nav" aria-label="Мэдээний ангилал"><a href="/news">Нүүр</a>{newsCategories.map(c=><a key={c.id} href={`/news/c/${c.id}`}>{c.label}</a>)}<a href="/news/video">▶ Видео мэдээ</a></nav>
   </header>
   <main className="news-main">{children}</main>
   <footer className="news-footer">

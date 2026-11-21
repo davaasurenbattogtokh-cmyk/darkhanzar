@@ -1,8 +1,9 @@
 import {newsCategories} from '../src/lib/news-categories.mjs';
 import {plainText} from '../src/lib/news-markup.mjs';
+import {normalizeVideo} from '../src/lib/news-video.mjs';
 
 // Storage and validation for business news articles. All functions take the shared env (env.DB).
-const LIST_COLUMNS='id,slug,title,summary,category,cover,status,featured,author_name,views,created_at,updated_at,published_at';
+const LIST_COLUMNS='id,slug,title,summary,category,cover,video,status,featured,author_name,views,created_at,updated_at,published_at';
 const CYRILLIC={а:'a',б:'b',в:'v',г:'g',д:'d',е:'ye',ё:'yo',ж:'j',з:'z',и:'i',й:'i',к:'k',л:'l',м:'m',н:'n',о:'o',ө:'u',п:'p',р:'r',с:'s',т:'t',у:'u',ү:'u',ф:'f',х:'kh',ц:'ts',ч:'ch',ш:'sh',щ:'sh',ъ:'',ы:'y',ь:'i',э:'e',ю:'yu',я:'ya'};
 
 export class NewsError extends Error{constructor(message,status=400){super(message);this.status=status;}}
@@ -20,14 +21,16 @@ export function cleanArticle(input){
  const title=text(input.title,200),summary=text(input.summary??'',400),body=typeof input.body==='string'&&input.body.length<=100000?input.body.replace(/\r\n?/g,'\n').trim():null;
  if(!title||title.length<5)throw new NewsError('Гарчиг 5–200 тэмдэгттэй байна.');
  if(summary===null)throw new NewsError('Товч агуулга 400 тэмдэгтээс хэтрэхгүй.');
- if(!body)throw new NewsError('Мэдээний бичвэрээ оруулна уу.');
+ const video=normalizeVideo(input.video);
+ if(video===null)throw new NewsError('Видео холбоос буруу байна. YouTube холбоос оруулах эсвэл видео файлаа дахин байршуулна уу.');
+ if(body===null||(!body&&!video))throw new NewsError('Мэдээний бичвэрээ оруулна уу.');
  if(!newsCategories.some(c=>c.id===input.category))throw new NewsError('Ангиллаа сонгоно уу.');
  if(typeof input.cover!=='string'||!safeCover(input.cover))throw new NewsError('Нүүр зургаа дахин байршуулна уу.');
  if(!['draft','published'].includes(input.status))throw new NewsError('Төлөв буруу байна.');
- return {title,summary:summary||plainText(body,300),body,category:input.category,cover:input.cover,status:input.status,featured:input.featured===true};
+ return {title,summary:summary||plainText(body,300),body,category:input.category,cover:input.cover,video,status:input.status,featured:input.featured===true};
 }
 
-const view=r=>r&&{id:r.id,slug:r.slug,title:r.title,summary:r.summary,category:r.category,cover:r.cover,status:r.status,featured:!!Number(r.featured),author:r.author_name,views:Number(r.views),createdAt:Number(r.created_at),updatedAt:Number(r.updated_at),publishedAt:Number(r.published_at),...(r.body!==undefined?{body:r.body}:{})};
+const view=r=>r&&{id:r.id,slug:r.slug,title:r.title,summary:r.summary,category:r.category,cover:r.cover,video:r.video||'',status:r.status,featured:!!Number(r.featured),author:r.author_name,views:Number(r.views),createdAt:Number(r.created_at),updatedAt:Number(r.updated_at),publishedAt:Number(r.published_at),...(r.body!==undefined?{body:r.body}:{})};
 const rows=async(env,sql,...args)=>(await env.DB.prepare(sql).bind(...args).all()).results||[];
 const one=(env,sql,...args)=>env.DB.prepare(sql).bind(...args).first();
 const int=(v,min,max,fallback)=>{const n=Number.parseInt(v,10);return Number.isInteger(n)?Math.min(max,Math.max(min,n)):fallback;};
@@ -48,6 +51,13 @@ export async function listPublished(env,{category='',limit=12,offset=0,excludeId
 export async function featuredArticle(env){
  return view(await one(env,`SELECT ${LIST_COLUMNS} FROM news_articles WHERE status='published' AND featured=1 ORDER BY published_at DESC LIMIT 1`))
   ||view(await one(env,`SELECT ${LIST_COLUMNS} FROM news_articles WHERE status='published' ORDER BY published_at DESC LIMIT 1`));
+}
+// Published articles that carry a video (YouTube or uploaded), newest first.
+export async function listVideos(env,{limit=3,offset=0}={}){
+ const lim=int(limit,1,50,3),off=int(offset,0,100000,0);
+ const total=Number((await one(env,"SELECT COUNT(*) AS n FROM news_articles WHERE status='published' AND video<>''"))?.n||0);
+ const items=(await rows(env,`SELECT ${LIST_COLUMNS} FROM news_articles WHERE status='published' AND video<>'' ORDER BY published_at DESC LIMIT ${lim} OFFSET ${off}`)).map(view);
+ return {items,total};
 }
 // Featured articles first, topped up with the latest ones (used by the marketplace sidebar).
 export async function highlights(env,limit=5){
@@ -75,8 +85,8 @@ export async function listAll(env){return (await rows(env,'SELECT * FROM news_ar
 export async function createArticle(env,input,author){
  const a=cleanArticle(input),now=Date.now(),id=crypto.randomUUID();
  const slug=slugify(a.title);
- await env.DB.prepare('INSERT INTO news_articles (id,slug,title,summary,body,category,cover,status,featured,author_id,author_name,views,created_at,updated_at,published_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,0,?,?,?)')
-  .bind(id,slug,a.title,a.summary,a.body,a.category,a.cover,a.status,a.featured?1:0,author.id,author.name.slice(0,100),now,now,a.status==='published'?now:0).run();
+ await env.DB.prepare('INSERT INTO news_articles (id,slug,title,summary,body,category,cover,video,status,featured,author_id,author_name,views,created_at,updated_at,published_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,0,?,?,?)')
+  .bind(id,slug,a.title,a.summary,a.body,a.category,a.cover,a.video,a.status,a.featured?1:0,author.id,author.name.slice(0,100),now,now,a.status==='published'?now:0).run();
  return view(await one(env,'SELECT * FROM news_articles WHERE id=?',id));
 }
 export async function updateArticle(env,id,input){
@@ -85,8 +95,8 @@ export async function updateArticle(env,id,input){
  const a=cleanArticle(input),now=Date.now();
  // The first publication fixes the public date; later edits keep it.
  const publishedAt=a.status==='published'?(Number(current.published_at)||now):Number(current.published_at);
- await env.DB.prepare('UPDATE news_articles SET title=?,summary=?,body=?,category=?,cover=?,status=?,featured=?,updated_at=?,published_at=? WHERE id=?')
-  .bind(a.title,a.summary,a.body,a.category,a.cover,a.status,a.featured?1:0,now,publishedAt,id).run();
+ await env.DB.prepare('UPDATE news_articles SET title=?,summary=?,body=?,category=?,cover=?,video=?,status=?,featured=?,updated_at=?,published_at=? WHERE id=?')
+  .bind(a.title,a.summary,a.body,a.category,a.cover,a.video,a.status,a.featured?1:0,now,publishedAt,id).run();
  return view(await one(env,'SELECT * FROM news_articles WHERE id=?',id));
 }
 export async function deleteArticle(env,id){

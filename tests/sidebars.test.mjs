@@ -8,8 +8,8 @@ import {defaultSettings,cleanSettings,normalizeSiteSettings} from '../src/lib/si
 
 function newsDb(){
  const db=new DatabaseSync(':memory:');
- db.exec(`CREATE TABLE news_articles (id TEXT PRIMARY KEY, slug TEXT, title TEXT, summary TEXT, body TEXT, category TEXT, cover TEXT DEFAULT '', status TEXT, featured INTEGER DEFAULT 0, author_id TEXT, author_name TEXT, views INTEGER DEFAULT 0, created_at INTEGER, updated_at INTEGER, published_at INTEGER DEFAULT 0)`);
- const add=(id,status,featured,at)=>db.prepare("INSERT INTO news_articles VALUES (?,?,?,'','x','economy','',?,?,'a','A',0,?,?,?)").run(id,id,id,status,featured,at,at,at);
+ db.exec(`CREATE TABLE news_articles (id TEXT PRIMARY KEY, slug TEXT, title TEXT, summary TEXT, body TEXT, category TEXT, cover TEXT DEFAULT '', status TEXT, featured INTEGER DEFAULT 0, author_id TEXT, author_name TEXT, views INTEGER DEFAULT 0, created_at INTEGER, updated_at INTEGER, published_at INTEGER DEFAULT 0, video TEXT DEFAULT '')`);
+ const add=(id,status,featured,at)=>db.prepare("INSERT INTO news_articles VALUES (?,?,?,'','x','economy','',?,?,'a','A',0,?,?,?,'')").run(id,id,id,status,featured,at,at,at);
  add('old-featured','published',1,100);add('new','published',0,300);add('newer','published',0,400);add('draft','draft',1,500);add('newest-featured','published',1,200);
  const stmt=(sql,args=[])=>({bind:(...a)=>stmt(sql,a),async all(){return {results:db.prepare(sql).all(...args)};},async first(){return db.prepare(sql).get(...args)||null;}});
  return {DB:{prepare:sql=>stmt(sql)}};
