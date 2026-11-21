@@ -17,6 +17,12 @@
 .market-news-more{display:block;margin-top:12px;text-align:center;padding:9px;border:1px solid var(--border);border-radius:999px;font-weight:800;font-size:13px;color:var(--navy)}
 .market-news-more:hover{border-color:var(--navy)}
 @media(min-width:1550px){.page-shell.with-news-rail{grid-template-columns:240px minmax(0,1fr) 290px}}
+/* The concept layout hides the category sidebar and is a single block column: make it main | news rail. */
+@media(min-width:1251px){
+ .page-shell.concept-shell.with-news-rail{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:32px;align-items:start}
+ .page-shell.concept-shell.with-news-rail>.sidebar:not(.sidebar-open){display:none}
+}
+@media(min-width:1550px){.page-shell.concept-shell.with-news-rail{grid-template-columns:minmax(0,1fr) 300px}}
 @media(max-width:1250px){
  .page-shell.with-news-rail{grid-template-columns:205px minmax(0,1fr)}
  .market-news-side{display:none}
@@ -25,3 +31,4 @@
 }
 @media(max-width:1050px){.page-shell.with-news-rail{grid-template-columns:183px minmax(0,1fr)}}
 @media(max-width:800px){.page-shell.with-news-rail{display:block}}
+@media(max-width:1250px){.page-shell.concept-shell.with-news-rail{display:block}}
