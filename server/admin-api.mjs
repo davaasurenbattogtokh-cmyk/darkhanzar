@@ -1,10 +1,15 @@
 import {defaultSettings,cleanSettings,normalizeSiteSettings} from '../src/lib/site-settings.mjs';
+import {handleAdmins} from './admin-users.mjs';
 const json=(body,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
 export function adminIdentity(request,env){
   const userId=request.headers.get('oai-authenticated-user-id');
   const email=request.headers.get('oai-authenticated-user-email');
+  // The role header is set only by the trusted Node boundary (trustedHeaders) for role='admin' accounts;
+  // any client-supplied oai-* headers are stripped before this runs.
+  const role=request.headers.get('oai-authenticated-user-role');
   const allowed=(env.ADMIN_EMAIL||'').toLowerCase().trim();
-  return {authenticated:!!userId,authorized:!!userId&&!!allowed&&email?.toLowerCase()===allowed,userId,email};
+  const primary=!!userId&&!!allowed&&email?.toLowerCase()===allowed;
+  return {authenticated:!!userId,authorized:primary||(!!userId&&!!email&&role==='admin'),primary,userId,email};
 }
 export function validMutationOrigin(request){
   return request.headers.get('Origin')===new URL(request.url).origin&&request.headers.get('Sec-Fetch-Site')!=='cross-site';
@@ -26,11 +31,12 @@ export async function handleAdminAPI(request,env){
    return new Response(object.body,{headers});
   }
   const identity=adminIdentity(request,env);
-  if(path==='/api/admin/session'&&request.method==='GET')return json({authenticated:identity.authenticated,authorized:identity.authorized,email:identity.authorized?identity.email:undefined});
+  if(path==='/api/admin/session'&&request.method==='GET')return json({authenticated:identity.authenticated,authorized:identity.authorized,primary:identity.primary,email:identity.authorized?identity.email:undefined});
   if(!path.startsWith('/api/admin/'))return json({error:'Олдсонгүй.'},404);
   if(!identity.authenticated)return json({error:'Админы эрхээр нэвтэрнэ үү.'},401);
   if(!identity.authorized)return json({error:'Танд админы эрх байхгүй байна.'},403);
   if(request.method==='GET'&&path==='/api/admin/settings')return json(await settingsRecord(env));
+  if(path==='/api/admin/admins')return handleAdmins(request,env,identity,validMutationOrigin(request));
   if(!validMutationOrigin(request))return json({error:'Хүсэлтийн эх сурвалж буруу байна.'},403);
   if(path==='/api/admin/settings'&&request.method==='PUT'){
    if(!request.headers.get('Content-Type')?.includes('application/json'))return json({error:'JSON хүсэлт шаардлагатай.'},415);
