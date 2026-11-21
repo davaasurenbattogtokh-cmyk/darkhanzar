@@ -11,5 +11,13 @@ import './concept.css';
 import './source-sync.css';
 import './promotions.css';
 import './market-news.css';
-export const metadata: Metadata = {title:'Darkhanzar — Ойрхон хай. Амархан ол.',description:'Дархан-Уул, Сүхбаатар хот, Хөтөлийн зарын нэгдсэн платформ. Орон нутгийн худалдаа, үйлчилгээ, ажлын зар.',robots:{index:false,follow:false}};
+const siteTitle='Darkhanzar — Ойрхон хай. Амархан ол.';
+const siteDescription='Дархан-Уул, Сүхбаатар хот, Хөтөлийн зарын нэгдсэн платформ. Орон нутгийн худалдаа, үйлчилгээ, ажлын зар.';
+// Link previews (Facebook, Messenger, Viber, X): without og:image a shared link shows as plain text.
+export const metadata: Metadata = {
+ metadataBase:new URL(process.env.APP_ORIGIN||'https://darkhanzar.mn'),
+ title:siteTitle,description:siteDescription,robots:{index:false,follow:false},
+ openGraph:{type:'website',siteName:'Darkhanzar',locale:'mn_MN',title:siteTitle,description:siteDescription,url:'/',images:[{url:'/og.png',width:1200,height:630,alt:'Darkhanzar'}]},
+ twitter:{card:'summary_large_image',title:siteTitle,description:siteDescription,images:['/og.png']},
+};
 export default function RootLayout({children}:{children:React.ReactNode}) {return <html lang="mn"><body>{children}</body></html>;}
