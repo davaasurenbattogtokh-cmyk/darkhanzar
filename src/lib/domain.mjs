@@ -1,5 +1,7 @@
 import {matchesAdvanced} from './advanced-filters.mjs';
 export const DARHAN_UUL = ['darkhan', 'khongor', 'orkhon', 'sharyngol'];
+// No stated price: an imported ad without a price, or an own ad marked negotiable at 0.
+const priceUnknown = item => !!item.source?.priceUnknown || (item.price === 0 && !!item.negotiable);
 export function normalize(value = '') { return String(value).toLocaleLowerCase('mn').normalize('NFKC').trim(); }
 export function filterListings(items, filters = {}) {
   const { query = '', category = '', region = 'all', min = '', max = '', featured = false, condition = 'all', sort = 'newest', advanced = {} } = filters;
@@ -9,8 +11,8 @@ export function filterListings(items, filters = {}) {
     && (region === 'all' || (region === 'darkhanuul' ? (DARHAN_UUL.includes(item.region) || item.region === 'darkhanuul') : item.region === region))
     && (!featured || item.featured)
     && (condition === 'all' || item.condition === condition)
-    && (min === '' || (!item.source?.priceUnknown && item.price >= Number(min)))
-    && (max === '' || (!item.source?.priceUnknown && item.price <= Number(max)))
+    && (min === '' || (!priceUnknown(item) && item.price >= Number(min)))
+    && (max === '' || (!priceUnknown(item) && item.price <= Number(max)))
     && matchesAdvanced(item,advanced)
     && terms.every(term => normalize(`${item.title} ${item.description} ${item.place} ${item.categoryLabel} ${item.subcategory}`).includes(term)));
   // Ads posted on Darkhanzar come before imported (Unegui) ads: promoted Darkhanzar ads,
@@ -19,7 +21,7 @@ export function filterListings(items, filters = {}) {
   return result.sort((a,b) => {
     if (rank(a) !== rank(b)) return rank(a) - rank(b);
     if(sort.startsWith('price-')){
-      if(!!a.source?.priceUnknown !== !!b.source?.priceUnknown)return a.source?.priceUnknown?1:-1;
+      if(priceUnknown(a) !== priceUnknown(b))return priceUnknown(a)?1:-1;
       return sort==='price-asc'?a.price-b.price:b.price-a.price;
     }
     return b.createdAt-a.createdAt;

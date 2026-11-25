@@ -52,3 +52,6 @@ const rows: [string,string,number,string,string,string,string,boolean,Record<str
 ];
 export const seedListings:Listing[] = rows.map((r,i)=>({id:`DZ-${1024+i}`,category:r[0],categoryLabel:categories.find(c=>c.id===r[0])!.label,title:r[1],price:r[2],region:r[3],place:r[4],images:[`/photos/${r[5]}.jpg`,...(r[0]==='property'?['/photos/interior.jpg']:[])],subcategory:r[6],featured:r[7],attributes:r[8]||{},status:'published',condition:i%4===0?'new':'used',createdAt:base-i*3600000,ownerId:'sample',seller:['Б. Энхжин','Т. Бат-Эрдэнэ','Г. Номин','Д. Мөнхтөр','С. Оюунчимэг','Н. Тэмүүлэн','Б. Саруул','А. Болормаа'][i%8],phone:'99999999',description:`${r[1]}. Цэвэрхэн хэрэглэсэн, сайн нөхцөлтэй. Дэлгэрэнгүй мэдээллийг зарын үзүүлэлтээс харна уу.\n\nЭнэ бол интерфэйс шалгах зориулалттай жишээ зар. Зураг нь тухайн зарын бодит бараа биш.`,negotiable:i%3===0}));
 export const money=(price:number)=>price===0?'Үнэгүй':`${new Intl.NumberFormat('en-US').format(price).replaceAll(',',' ')} ₮`;
+// An ad without a stated price (e.g. imported from the Facebook page) is negotiable, not free.
+export const listingMoney=(item:{price:number;negotiable?:boolean})=>item.price===0&&item.negotiable?'Үнэ тохиролцоно':money(item.price);
+export const showNegotiable=(item:{price:number;negotiable?:boolean})=>!!item.negotiable&&item.price>0;
