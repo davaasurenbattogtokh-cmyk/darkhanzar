@@ -11,6 +11,7 @@ import './concept.css';
 import './source-sync.css';
 import './promotions.css';
 import './market-news.css';
+import VisitTracker from '@/components/VisitTracker';
 const siteTitle='Darkhanzar — Ойрхон хай. Амархан ол.';
 const siteDescription='Дархан-Уул, Сүхбаатар хот, Хөтөлийн зарын нэгдсэн платформ. Орон нутгийн худалдаа, үйлчилгээ, ажлын зар.';
 // Link previews (Facebook, Messenger, Viber, X): without og:image a shared link shows as plain text.
@@ -22,4 +23,4 @@ export const metadata: Metadata = {
  // fb:app_id (the public Facebook app ID, same app as Facebook login). Inherited by every page, /news included.
  facebook:{appId:process.env.FACEBOOK_APP_ID||'1190178560029395'},
 };
-export default function RootLayout({children}:{children:React.ReactNode}) {return <html lang="mn"><body>{children}</body></html>;}
+export default function RootLayout({children}:{children:React.ReactNode}) {return <html lang="mn"><body>{children}<VisitTracker/></body></html>;}

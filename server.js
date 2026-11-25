@@ -25,7 +25,10 @@ router.use(async(req,res)=>{
   const url=new URL(req.url,origin);if(url.origin!==origin){res.status(400).end();return;}
   const headers=new Headers();for(const [key,value] of Object.entries(req.headers)){if(value)headers.set(key,Array.isArray(value)?value.join(','):value);}
   const request=new Request(url,{method:req.method,headers,...(!['GET','HEAD'].includes(req.method)?{body:Readable.toWeb(req),duplex:'half'}:{})});
-  const response=await handleApplication(request,env,pool,req.socket.remoteAddress);
+  // Behind nginx every connection comes from loopback; only then is nginx's X-Real-IP trusted.
+  const peer=req.socket.remoteAddress||'',realIP=String(req.headers['x-real-ip']||'');
+  const ip=/^(127\.|::1$|::ffff:127\.)/.test(peer)&&/^[0-9a-fA-F:.]{3,45}$/.test(realIP)?realIP:peer;
+  const response=await handleApplication(request,env,pool,ip);
   if(!response){await handler(req,res);return;}
   res.statusCode=response.status;writeHeaders(res,response.headers);
   if(response.body&&req.method!=='HEAD'){await new Promise((resolve,reject)=>{const stream=Readable.fromWeb(response.body);stream.on('error',reject);res.on('finish',resolve);res.on('close',resolve);stream.pipe(res);});}else res.end();

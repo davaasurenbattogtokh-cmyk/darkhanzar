@@ -10,6 +10,7 @@ import AdvancedFilters,{AttributeInputs,emptyAdvanced} from './AdvancedFilters';
 import {rootForCategory} from '@/lib/advanced-filters.mjs';
 import {PromotionPrices,useSiteSettings} from './SiteContent';
 import {filterListings,validateDraft,transitionListing} from '@/lib/domain.mjs';
+import {trackVisit} from '@/lib/track';
 
 import AdvertisingBanner from './AdvertisingBanner';
 import LoginChoices from './LoginChoices';
@@ -47,6 +48,8 @@ export default function Marketplace(){
   function notify(text:string){setToast(text);if(toastTimer.current)clearTimeout(toastTimer.current);toastTimer.current=setTimeout(()=>setToast(''),4200);}
   useEffect(()=>{try{const value=JSON.parse(localStorage.getItem(storageKey)||'null');if(value){if(Array.isArray(value.saved))setSaved(value.saved);if(value.region==='all'||value.region==='darkhanuul'||regions.some(r=>r.id===value.region))setRegion(value.region);}}catch{}setHydrated(true);if(new URLSearchParams(window.location.search).get('view')==='mine')setView('mine');const id=new URLSearchParams(window.location.search).get('ad');if(id){const sample=sourceListings.find(i=>i.id===id);if(sample){setSelected(sample);setModal('detail');}}return()=>{if(toastTimer.current)clearTimeout(toastTimer.current);};},[]);
   useEffect(()=>{if(!hydrated)return;try{localStorage.setItem(storageKey,JSON.stringify({saved,region}));}catch{}},[saved,region,hydrated]);
+  // Opening an ad counts as a view of that ad in the admin visitor statistics.
+  useEffect(()=>{if(modal==='detail'&&selected?.id)trackVisit(`${window.location.pathname}?ad=${selected.id}`);},[modal,selected?.id]);
   useEffect(()=>{if(!hydrated)return;let alive=true,linkResolved=false;async function refresh(){try{const response=await fetch('/api/source-listings',{cache:'no-store'});if(!response.ok)return;const {snapshot}=await response.json() as {snapshot:SourceData|null};if(!alive||!snapshot)return;const incoming=toSourceListings(snapshot);setLiveSource(snapshot);setItems(prev=>[...incoming,...prev.filter(i=>!i.source)]);const id=new URLSearchParams(window.location.search).get('ad');if(id&&!linkResolved){const found=incoming.find(i=>i.id===id);if(found){setSelected(found);setModal('detail');}linkResolved=true;}}catch{}}refresh();const focus=()=>{if(document.visibilityState==='visible')refresh();};window.addEventListener('focus',focus);return()=>{alive=false;window.removeEventListener('focus',focus);};},[hydrated]);
   async function reloadMarket(){try{
     const whoResponse=await fetch('/api/market/session',{cache:'no-store'});if(!whoResponse.ok)return;const who=await whoResponse.json() as {user:{id:string;name:string}|null};setSession(who.user);

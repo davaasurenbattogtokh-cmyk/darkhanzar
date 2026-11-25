@@ -1,5 +1,6 @@
 import {startSync,stepSync,localDay} from '../source-sync.mjs';
 import {dailyFacebookImport} from '../facebook-import.mjs';
+import {pruneVisits} from '../visits.mjs';
 export function startScheduler(env,pool){
  const uneguiEnabled=env.UNEGUI_SYNC_ENABLED==='true';
  let running=false;
@@ -18,6 +19,7 @@ export function startScheduler(env,pool){
    await pool.execute('DELETE FROM auth_sessions WHERE expires_at<?',[Date.now()]);
    await pool.execute('DELETE FROM auth_limits WHERE reset_at<?',[Date.now()]);
    await pool.execute('DELETE FROM stored_objects WHERE expires_at>0 AND expires_at<?',[Date.now()]);
+   await pruneVisits(env);
   }catch{console.error('Daily source update unavailable; retained prior publication.');}finally{running=false;}
  };
  const timer=setInterval(tick,60000);timer.unref();void tick();return ()=>clearInterval(timer);
