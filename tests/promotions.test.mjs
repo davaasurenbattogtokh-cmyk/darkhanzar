@@ -52,7 +52,7 @@ test('Callbacks need the unique callback key and recheck the provider; public pa
 });
 test('Paying a now-closed ad marks paid review without promoting it, and expired ads sort normally',async()=>{
  const f=fixture(),p=provider({paid:true});const order=await createPromotion(f.env,owner,input(),origin,p);f.db.prepare("UPDATE market_listings SET status='closed'").run();assert.equal((await verifyPromotion(f.env,order.id,p)).status,'paid_review');assert.equal(f.db.prepare('SELECT promoted_until FROM market_listings').get().promoted_until,0);
- const row=f.db.prepare('SELECT * FROM market_listings').get();row.status='published';row.promoted_until=Date.now()-1;const listing=publicListing(row);assert.equal(listing.featured,false);const imported={...listing,id:'UN-1',source:{},createdAt:Date.now()+1000};assert.equal(filterListings([listing,imported])[0].id,'UN-1');
+ const row=f.db.prepare('SELECT * FROM market_listings').get();row.status='published';row.promoted_until=Date.now()-1;const listing=publicListing(row);assert.equal(listing.featured,false);const imported={...listing,id:'UN-1',source:{},createdAt:Date.now()+1000};assert.equal(filterListings([imported,listing])[0].id,listing.id,'Darkhanzar ads stay ahead of newer imported ads');
 });
 test('Private order reads/checks and writes enforce identity and same origin; local status reads never query QPay',async()=>{
  const f=fixture(),p=provider(),order=await createPromotion(f.env,owner,input(),origin,p),before=p.calls.length;

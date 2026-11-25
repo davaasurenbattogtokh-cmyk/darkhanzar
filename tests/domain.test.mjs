@@ -11,6 +11,10 @@ test('Darkhanzar-ийн онцлох зар Unegui-ийн онцлох боло�
     {...listing,id:'import-new',source:{},createdAt:1000,price:3},
   ];
   for(const sort of ['newest','price-asc','price-desc'])assert.equal(filterListings(records,{sort})[0].id,'local-featured');
+  // Every Darkhanzar ad precedes every Unegui ad, whatever the sort; the sort applies inside each group.
+  assert.deepEqual(filterListings(records).map(i=>i.id),['local-featured','local-regular','import-new','import-featured']);
+  assert.deepEqual(filterListings(records,{sort:'price-asc'}).map(i=>i.id),['local-featured','local-regular','import-featured','import-new']);
+  assert.deepEqual(filterListings(records,{sort:'price-desc'}).map(i=>i.id),['local-featured','local-regular','import-new','import-featured']);
   assert.deepEqual(filterListings(records,{featured:true}).map(i=>i.id),['local-featured','import-featured']);
   assert.equal(records[0].id,'import-featured');
   assert.equal(filterListings(records,{max:'10'}).some(i=>i.id==='local-featured'),false);

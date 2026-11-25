@@ -13,11 +13,11 @@ export function filterListings(items, filters = {}) {
     && (max === '' || (!item.source?.priceUnknown && item.price <= Number(max)))
     && matchesAdvanced(item,advanced)
     && terms.every(term => normalize(`${item.title} ${item.description} ${item.place} ${item.categoryLabel} ${item.subcategory}`).includes(term)));
+  // Ads posted on Darkhanzar come before imported (Unegui) ads: promoted Darkhanzar ads,
+  // then other Darkhanzar ads, then imported ones. The chosen sort applies within each group.
+  const rank = item => item.source ? 2 : item.featured ? 0 : 1;
   return result.sort((a,b) => {
-    // Darkhanzar promotions precede imported listings, within the active filters.
-    const aLocalFeatured = !!a.featured && !a.source;
-    const bLocalFeatured = !!b.featured && !b.source;
-    if (aLocalFeatured !== bLocalFeatured) return aLocalFeatured ? -1 : 1;
+    if (rank(a) !== rank(b)) return rank(a) - rank(b);
     if(sort.startsWith('price-')){
       if(!!a.source?.priceUnknown !== !!b.source?.priceUnknown)return a.source?.priceUnknown?1:-1;
       return sort==='price-asc'?a.price-b.price:b.price-a.price;
