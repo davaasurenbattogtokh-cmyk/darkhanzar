@@ -100,10 +100,11 @@ export async function importPosts(env,posts,{fetcher=fetch}={}){
 
 let active=null;
 // One run at a time in this process. `since` is the last successful run (minus a day of overlap).
-export function runFacebookImport(env,trigger='manual',{fetcher=fetch}={}){
+export function runFacebookImport(env,trigger='manual',{fetcher=fetch,runId=''}={}){
  if(active)return active;
  active=(async()=>{
-  const id=`${trigger}-${trigger==='daily'?localDay():crypto.randomUUID()}`,started=Date.now();
+  // Daily runs reuse the day row the scheduler already claimed.
+  const id=runId||`${trigger}-${trigger==='daily'?localDay():crypto.randomUUID()}`,started=Date.now();
   if(trigger!=='daily')await run(env,'INSERT INTO facebook_import_runs (id,day,trig,status,started_at,finished_at,result_json) VALUES (?,?,?,?,?,0,?)',id,localDay(),trigger,'running',started,'{}');
   try{
    const last=await first(env,"SELECT started_at FROM facebook_import_runs WHERE status='ok' ORDER BY started_at DESC LIMIT 1");
@@ -130,7 +131,7 @@ export async function dailyFacebookImport(env,{now=Date.now(),fetcher=fetch}={})
  await run(env,'INSERT INTO facebook_import_runs (id,day,trig,status,started_at,finished_at,result_json) VALUES (?,?,?,?,?,0,?) ON CONFLICT(id) DO NOTHING',id,localDay(now),'daily','running',now,JSON.stringify({claim:token}));
  const row=await first(env,'SELECT result_json FROM facebook_import_runs WHERE id=?',id);
  if(!row||JSON.parse(row.result_json).claim!==token)return null;
- return runFacebookImport(env,'daily',{fetcher});
+ return runFacebookImport(env,'daily',{fetcher,runId:id});
 }
 
 export async function facebookImportStatus(env){
