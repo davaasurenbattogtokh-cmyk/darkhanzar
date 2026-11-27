@@ -29,3 +29,20 @@
 .visits-table td{padding:8px 0;border-top:1px solid #eef0f5;text-align:right;white-space:nowrap;padding-left:10px}
 .visits-table td:first-child{text-align:left;white-space:normal;word-break:break-word;padding-left:0}
 @media(max-width:900px){.visits-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.visits-grid{grid-template-columns:1fr}}
+/* Admin → Зар оруулах, онцгой болгох */
+.featured-admin-tools{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:6px 0 14px}
+.featured-admin-tools input{flex:1;min-width:220px;border:1px solid #e5e8ef;border-radius:10px;padding:10px 12px;font:inherit}
+.featured-admin-tools span{color:#5b6684;font-size:12px}
+.featured-admin-list{display:flex;flex-direction:column;gap:8px}
+.featured-admin-list article{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:14px;align-items:center;border:1px solid #eef0f5;border-radius:12px;padding:8px 12px 8px 8px;background:#fff}
+.featured-admin-list article.is-featured{border-color:#f5b26b;background:#fff8ef}
+.featured-admin-list img,.featured-admin-noimg{width:64px;height:64px;border-radius:8px;object-fit:cover;background:#eef0f5;display:block}
+.featured-admin-info h3{margin:0 0 4px;font-size:14px;line-height:1.3}
+.featured-admin-info h3 a{color:#101c45;text-decoration:none}
+.featured-admin-info h3 a:hover{text-decoration:underline}
+.featured-admin-info small{color:#5b6684;display:block}
+.featured-admin-badge{display:inline-flex;align-items:center;gap:4px;margin-top:6px;font-size:12px;font-weight:600;color:#9a4b00}
+.featured-admin-badge .icon{width:14px;height:14px}
+.featured-admin-actions{display:flex;align-items:center;gap:8px}
+.featured-admin-actions select{border:1px solid #e5e8ef;border-radius:8px;padding:8px;font:inherit;background:#fff}
+@media(max-width:700px){.featured-admin-list article{grid-template-columns:56px minmax(0,1fr)}.featured-admin-list img,.featured-admin-noimg{width:56px;height:56px}.featured-admin-actions{grid-column:1/-1;flex-wrap:wrap}}

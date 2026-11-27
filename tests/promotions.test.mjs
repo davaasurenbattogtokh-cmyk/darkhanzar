@@ -87,3 +87,25 @@ test('Provider requests use Worker-supported redirect handling and never forward
 test('Native listing locations display Mongolian labels when an exact neighborhood is omitted',async()=>{
  const f=fixture(),path=f.listing.images[0];f.db.prepare('INSERT INTO market_uploads VALUES (?,?,?)').run(path,owner.id,Date.now());const response=await handleMarketAPI(req('/api/market/listings','POST',{...f.listing,place:'',condition:'used',subcategory:'Автомашин зарна',phone:''}),f.env);assert.equal(response.status,201);assert.equal((await response.json()).item.place,'Дархан');const row=f.db.prepare('SELECT * FROM market_listings WHERE id=?').get('DZ-real');row.data_json=JSON.stringify({...f.listing,place:'darkhan'});assert.equal(publicListing(row).place,'Дархан');
 });
+
+const adminWho={id:'admin-1',name:'Админ'};
+const adminHeaders={'oai-authenticated-user-email':'admin@example.test','oai-authenticated-user-role':'admin'};
+test('Admin makes any live ad featured for free, extends it, and can end it; non-admins cannot',async()=>{
+ const {env,db}=fixture(),feature=(body,who=adminWho,extra=adminHeaders)=>handleMarketAPI(req('/api/admin/listings/feature','POST',body,who,extra),env);
+ assert.equal((await feature({id:'DZ-real',days:7},owner,{})).status,403);
+ const day=86400000,first=await feature({id:'DZ-real',days:7});assert.equal(first.status,200);
+ const until=(await first.json()).promotedUntil;assert(Math.abs(until-(Date.now()+7*day))<5000);
+ assert.equal(publicListing(db.prepare('SELECT * FROM market_listings').get()).featured,true);
+ const extended=await (await feature({id:'DZ-real',days:3})).json();assert(Math.abs(extended.promotedUntil-(until+3*day))<5000,'extends from the current end');
+ assert.equal((await feature({id:'DZ-real',days:0})).status,200);assert.equal(db.prepare('SELECT promoted_until FROM market_listings').get().promoted_until,0);
+ for(const days of [-1,400,1.5,'x'])assert.equal((await feature({id:'DZ-real',days})).status,400,String(days));
+ db.prepare("UPDATE market_listings SET status='pending'").run();assert.equal((await feature({id:'DZ-real',days:7})).status,404,'only published ads');
+ const list=await (await handleMarketAPI(req('/api/admin/listings?scope=published','GET',undefined,adminWho,adminHeaders),env)).json();assert.deepEqual(list.items,[]);
+});
+test('Admin-posted ads are published at once; ordinary users still go to review',async()=>{
+ const {env,db}=fixture(),image='/api/listing-media/22222222-2222-4222-8222-222222222222.jpg',userImage='/api/listing-media/33333333-3333-4333-8333-333333333333.jpg';
+ db.prepare('INSERT INTO market_uploads (path,owner_id,created_at) VALUES (?,?,?)').run(image,adminWho.id,Date.now());db.prepare('INSERT INTO market_uploads (path,owner_id,created_at) VALUES (?,?,?)').run(userImage,owner.id,Date.now());
+ const draft=img=>({title:'Шинэ хөргөгч зарна',description:'Цэвэрхэн хэрэглэсэн хөргөгч, ажиллагаа сайн.',category:'electronics',subcategory:'',region:'darkhan',place:'Дархан',price:300000,images:[img],condition:'used',negotiable:false,attributes:{},phone:'88112233'});
+ const asAdmin=await handleMarketAPI(req('/api/market/listings','POST',draft(image),adminWho,adminHeaders),env);assert.equal(asAdmin.status,201);assert.equal((await asAdmin.json()).item.status,'published');
+ const asUser=await handleMarketAPI(req('/api/market/listings','POST',draft(userImage),owner),env);assert.equal(asUser.status,201);assert.equal((await asUser.json()).item.status,'pending');
+});
