@@ -11,3 +11,7 @@
 @media(max-width:1050px){.category-link{font-size:11px}.listing-title{font-size:13px}.listing-meta{font-size:9px}.filter-panel{grid-template-columns:1fr 1fr}}
 @media(max-width:600px){.hero{height:218px}.hero-art{display:none}.hero:after{content:'';position:absolute;width:150px;height:150px;border:1px solid #efd9bc;border-radius:50%;right:-95px;top:-55px;box-shadow:0 0 0 17px #fff9f0}.hero-content{padding:21px 20px}.hero h1{font-size:32px;line-height:1.1;margin-top:8px;margin-bottom:10px}.hero p{font-size:11px;max-width:100%}.hero-locations{top:159px;margin-top:15px}.hero-locations button{font-size:9px}.listing-title{font-size:13px;min-height:41px}.listing-type{font-size:9px}.price{font-size:17px}.listing-meta{font-size:9px}.listing-meta>span:last-child{font-size:8px}.category-link{font-size:12px}.quick-card strong{font-size:9px}.filter-button{min-height:40px}.sort-select select{min-height:40px}.filter-panel{grid-template-columns:1fr 1fr}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+
+/* Facebook share button in ad details */
+.button.fb-share{background:#1877f2;border-color:#1877f2;color:#fff;gap:8px;text-decoration:none}
+.button.fb-share:hover{background:#166fe0;border-color:#166fe0;color:#fff}
