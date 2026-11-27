@@ -109,3 +109,15 @@ test('Admin-posted ads are published at once; ordinary users still go to review'
  const asAdmin=await handleMarketAPI(req('/api/market/listings','POST',draft(image),adminWho,adminHeaders),env);assert.equal(asAdmin.status,201);assert.equal((await asAdmin.json()).item.status,'published');
  const asUser=await handleMarketAPI(req('/api/market/listings','POST',draft(userImage),owner),env);assert.equal(asUser.status,201);assert.equal((await asUser.json()).item.status,'pending');
 });
+test('Moderators review pending ads but cannot feature ads, see payments or manage settings',async()=>{
+ const {env,db}=fixture(),mod={id:'mod-1',name:'Хянагч'},modHeaders={'oai-authenticated-user-role':'moderator'};
+ db.prepare("UPDATE market_listings SET status='pending'").run();
+ const queue=await handleMarketAPI(req('/api/admin/listings','GET',undefined,mod,modHeaders),env);assert.equal(queue.status,200);
+ const [item]=(await queue.json()).items;assert.equal(item.id,'DZ-real');
+ assert.equal((await handleMarketAPI(req('/api/admin/listings','GET',undefined,owner),env)).status,403,'ordinary users cannot');
+ const approved=await handleMarketAPI(req('/api/admin/listings','POST',{id:'DZ-real',updatedAt:item.updatedAt,action:'approve'},mod,modHeaders),env);assert.equal(approved.status,200);
+ assert.equal(db.prepare('SELECT status FROM market_listings').get().status,'published');
+ assert.match(db.prepare('SELECT action FROM admin_audit ORDER BY id DESC LIMIT 1').get().action,/^listing\.approve:DZ-real$/);
+ assert.equal((await handleMarketAPI(req('/api/admin/listings/feature','POST',{id:'DZ-real',days:7},mod,modHeaders),env)).status,403);
+ const scoped=await (await handleMarketAPI(req('/api/admin/listings?scope=published','GET',undefined,mod,modHeaders),env)).json();assert.deepEqual(scoped.items,[],'published list is admin-only');
+});

@@ -9,7 +9,9 @@ export function adminIdentity(request,env){
   const role=request.headers.get('oai-authenticated-user-role');
   const allowed=(env.ADMIN_EMAIL||'').toLowerCase().trim();
   const primary=!!userId&&!!allowed&&email?.toLowerCase()===allowed;
-  return {authenticated:!!userId,authorized:primary||(!!userId&&!!email&&role==='admin'),primary,userId,email};
+  const authorized=primary||(!!userId&&!!email&&role==='admin');
+  // Moderators (хяналтын ажилтан) only review pending ads; admins can do that too.
+  return {authenticated:!!userId,authorized,primary,userId,email,reviewer:authorized||(!!userId&&role==='moderator')};
 }
 export function validMutationOrigin(request){
   return request.headers.get('Origin')===new URL(request.url).origin&&request.headers.get('Sec-Fetch-Site')!=='cross-site';
@@ -50,8 +52,9 @@ export async function handleAdminAPI(request,env){
   if(path==='/api/admin/session'&&request.method==='GET'){
    const role=request.headers.get('oai-authenticated-user-role');
    const editor=identity.authenticated&&!identity.authorized&&role==='editor';
+   const moderator=identity.authenticated&&!identity.authorized&&role==='moderator';
    let name=request.headers.get('oai-authenticated-user-full-name')||'';try{name=decodeURIComponent(name);}catch{name='';}
-   return json({authenticated:identity.authenticated,authorized:identity.authorized,primary:identity.primary,editor,name:(identity.authorized||editor)?name.slice(0,100):undefined,email:identity.authorized?identity.email:undefined});
+   return json({authenticated:identity.authenticated,authorized:identity.authorized,primary:identity.primary,editor,moderator,name:(identity.authorized||editor||moderator)?name.slice(0,100):undefined,email:identity.authorized?identity.email:undefined});
   }
   if(!path.startsWith('/api/admin/'))return json({error:'Олдсонгүй.'},404);
   if(!identity.authenticated)return json({error:'Админы эрхээр нэвтэрнэ үү.'},401);

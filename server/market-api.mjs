@@ -48,10 +48,12 @@ export async function handleMarketAPI(request,env){
   }
   if(!who)throw new PublicError('Баталгаажсан бүртгэлээр нэвтэрнэ үү.',401);
   if(path==='/api/market/mine'&&request.method==='GET')return json({items:(await all(env,'SELECT * FROM market_listings WHERE owner_id=? ORDER BY created_at DESC LIMIT 200',who.id)).map(r=>publicListing(r,true))});
-  if(path.startsWith('/api/admin/listings')&&!admin.authorized)throw new PublicError('Админы эрх шаардлагатай.',403);
+  // The review queue (/api/admin/listings) is open to moderators; everything else here is admin-only.
+  if(path==='/api/admin/listings'&&!admin.reviewer)throw new PublicError('Хяналтын эрх шаардлагатай.',403);
+  if(path.startsWith('/api/admin/listings')&&path!=='/api/admin/listings'&&!admin.authorized)throw new PublicError('Админы эрх шаардлагатай.',403);
   if(path==='/api/admin/listings'&&request.method==='GET'){
    // ?scope=published: every live ad, featured first, for the admin's free «онцгой болгох».
-   if(url.searchParams.get('scope')==='published')return json({items:(await all(env,"SELECT * FROM market_listings WHERE status='published' ORDER BY promoted_until DESC, created_at DESC LIMIT 1000")).map(r=>publicListing(r))});
+   if(url.searchParams.get('scope')==='published'&&admin.authorized)return json({items:(await all(env,"SELECT * FROM market_listings WHERE status='published' ORDER BY promoted_until DESC, created_at DESC LIMIT 1000")).map(r=>publicListing(r))});
    return json({items:(await all(env,"SELECT * FROM market_listings WHERE status='pending' ORDER BY created_at LIMIT 200")).map(r=>publicListing(r))});
   }
   if(!validMutationOrigin(request))throw new PublicError('Хүсэлтийн эх сурвалж буруу.',403);
@@ -68,7 +70,9 @@ export async function handleMarketAPI(request,env){
   if(path==='/api/admin/listings'&&request.method==='POST'){
    const status={approve:'published',reject:'rejected'}[body.action];if(!status)throw new PublicError('Үйлдэл буруу.');
    if(!Number.isSafeInteger(body.updatedAt))throw new PublicError('Зарын хувилбарыг шинэчилнэ үү.',409);
-   const updated=await first(env,"UPDATE market_listings SET status=?,updated_at=MAX(updated_at+1,?) WHERE id=? AND status='pending' AND updated_at=? RETURNING id",status,Date.now(),body.id,body.updatedAt);if(!updated)throw new PublicError('Зарыг өөрчилсөн байна. Шинэчилж аваад дахин хянана уу.',409);return json({ok:true});
+   const updated=await first(env,"UPDATE market_listings SET status=?,updated_at=MAX(updated_at+1,?) WHERE id=? AND status='pending' AND updated_at=? RETURNING id",status,Date.now(),body.id,body.updatedAt);if(!updated)throw new PublicError('Зарыг өөрчилсөн байна. Шинэчилж аваад дахин хянана уу.',409);
+   await run(env,'INSERT INTO admin_audit (actor_id,action,settings_revision,created_at) VALUES (?,?,0,?)',admin.userId,`listing.${body.action}:${String(body.id).slice(0,150)}`,new Date().toISOString());
+   return json({ok:true});
   }
   if(path==='/api/admin/listings/feature'&&request.method==='POST'){
    // Admin makes any live ad featured for free (days>0) or ends its featured period (days=0).
